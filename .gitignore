@@ -214,3 +214,11 @@ mise.toml
 
 # AI Assistant
 .roo/
+
+# 忽略所有 .bak 文件
+*.bak
+
+# 忽略所有 .tmp、.swp 文件
+*.tmp
+*.swp
+temp/

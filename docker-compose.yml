@@ -1,0 +1,218 @@
+services:
+  # PostgreSQL 数据库
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_DB: dify
+      POSTGRES_USER: dify
+      POSTGRES_PASSWORD: dify123456
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./docker/db/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "dify"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Redis 缓存
+  redis:
+    image: redis:7-alpine
+    restart: always
+    command: redis-server --requirepass dify123456
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Weaviate 向量数据库
+  weaviate:
+    image: semitechnologies/weaviate:1.19.0
+    restart: always
+    environment:
+      QUERY_DEFAULTS_LIMIT: 25
+      AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: 'false'
+      PERSISTENCE_DATA_PATH: '/var/lib/weaviate'
+      DEFAULT_VECTORIZER_MODULE: 'none'
+      CLUSTER_HOSTNAME: 'node1'
+    volumes:
+      - weaviate_data:/var/lib/weaviate
+
+  # Dify API 服务
+  api:
+    build:
+      context: .
+      dockerfile: docker/api/Dockerfile
+    restart: always
+    environment:
+      MODE: api
+      LOG_LEVEL: INFO
+      SECRET_KEY: sk-9f73s3ljTXVcMT3Blb3ljTqtsKiGHXVcMT3BlbkFJLK7U
+      DATABASE_URL: postgresql://dify:dify123456@db:5432/dify
+      REDIS_URL: redis://:dify123456@redis:6379/0
+      CELERY_BROKER_URL: redis://:dify123456@redis:6379/1
+      WEB_API_CORS_ALLOW_ORIGINS: '*'
+      CONSOLE_CORS_ALLOW_ORIGINS: '*'
+      CONSOLE_WEB_URL: ''
+      INIT_PASSWORD: ''
+      CONSOLE_API_URL: ''
+      SERVICE_API_URL: ''
+      APP_WEB_URL: ''
+      FILES_URL: ''
+      MIGRATION_ENABLED: 'true'
+      WEAVIATE_ENDPOINT: http://weaviate:8080
+      WEAVIATE_API_KEY: WVF5YThaHlkYwhGUSmCRgsX3tD5ngdN8pkih
+    depends_on:
+      - db
+      - redis
+      - weaviate
+    volumes:
+      - app_storage:/app/storage
+    ports:
+      - "5001:5001"
+
+  # Dify Worker 服务
+  worker:
+    build:
+      context: .
+      dockerfile: docker/api/Dockerfile
+    restart: always
+    environment:
+      MODE: worker
+      LOG_LEVEL: INFO
+      SECRET_KEY: sk-9f73s3ljTXVcMT3Blb3ljTqtsKiGHXVcMT3BlbkFJLK7U
+      DATABASE_URL: postgresql://dify:dify123456@db:5432/dify
+      REDIS_URL: redis://:dify123456@redis:6379/0
+      CELERY_BROKER_URL: redis://:dify123456@redis:6379/1
+      WEAVIATE_ENDPOINT: http://weaviate:8080
+      WEAVIATE_API_KEY: WVF5YThaHlkYwhGUSmCRgsX3tD5ngdN8pkih
+    depends_on:
+      - db
+      - redis
+      - weaviate
+    volumes:
+      - app_storage:/app/storage
+
+  # Dify Web 前端
+  web:
+    build:
+      context: .
+      dockerfile: web/Dockerfile
+    restart: always
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:5001
+      NEXT_PUBLIC_DIFY_API_URL: http://localhost:5001
+    depends_on:
+      - api
+    ports:
+      - "3000:3000"
+
+  # AlphaMind API 服务
+  alphamind-api:
+    build:
+      context: ./docker/alphamind-api
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      DATABASE_URL: postgresql://dify:dify123456@db:5432/dify
+      REDIS_URL: redis://:dify123456@redis:6379/2
+      DIFY_API_URL: http://api:5001
+      N8N_API_URL: http://n8n:5678
+    depends_on:
+      - db
+      - redis
+      - api
+    ports:
+      - "5002:5002"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5002/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # AlphaMind Web 前端
+  alphamind-web:
+    build:
+      context: ./docker/alphamind-web
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:5002
+      NEXT_PUBLIC_DIFY_API_URL: http://localhost:5001
+    depends_on:
+      alphamind-api:
+        condition: service_healthy
+    ports:
+      - "3001:3000"
+
+  # n8n 工作流引擎 (兼容现有数据)
+  n8n:
+    image: docker.n8n.io/n8nio/n8n  # 使用官方镜像地址
+    container_name: n8n
+    restart: always
+    ports:
+      - "5678:5678"
+    environment:
+      # 时区设置
+      - GENERIC_TIMEZONE=Asia/Shanghai
+
+      # 主机和端口配置
+      - N8N_HOST=host.docker.internal
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+
+      # Webhook 配置
+      - WEBHOOK_URL=http://host.docker.internal:5678
+      - N8N_EDITOR_BASE_URL=http://host.docker.internal:5678
+
+      # 数据库配置 (可选，如果需要使用 PostgreSQL)
+      # - DB_TYPE=postgresdb
+      # - DB_POSTGRESDB_HOST=db
+      # - DB_POSTGRESDB_PORT=5432
+      # - DB_POSTGRESDB_DATABASE=n8n
+      # - DB_POSTGRESDB_USER=dify
+      # - DB_POSTGRESDB_PASSWORD=dify123456
+
+      # 基本认证 (可选)
+      # - N8N_BASIC_AUTH_ACTIVE=true
+      # - N8N_BASIC_AUTH_USER=admin
+      # - N8N_BASIC_AUTH_PASSWORD=admin123456
+    volumes:
+      # 使用外部卷保护现有数据
+      - n8n_data:/home/node/.n8n
+
+      # 本地文件映射 (根据需要调整路径)
+      # Windows 示例: - D:/n8n-local-files:/tmp/
+      # Linux/Mac 示例: - ./n8n-local-files:/tmp/
+      # - ./n8n-local-files:/tmp/
+    depends_on:
+      - db  # 如果使用 PostgreSQL 数据库
+
+  # Nginx 反向代理
+  nginx:
+    image: nginx:alpine
+    restart: always
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - web
+      - alphamind-web
+      - n8n
+    ports:
+      - "80:80"
+
+volumes:
+  # 新创建的卷
+  db_data:
+  redis_data:
+  weaviate_data:
+  app_storage:
+
+  # n8n 数据卷 - 使用外部卷保护现有数据
+  n8n_data:
+    external: true  # 标记为外部卷，保护现有数据
+
