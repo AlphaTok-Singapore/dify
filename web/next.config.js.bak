@@ -1,0 +1,15 @@
+const nextConfig = {
+  experimental: {
+    appDir: true,
+  },
+  async rewrites() {
+    return [
+      {
+        source: "/alphamind/:path*",
+        destination: "/:path*",
+      },
+    ]
+  },
+}
+
+module.exports = nextConfig

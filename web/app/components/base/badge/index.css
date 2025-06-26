@@ -6,12 +6,12 @@
     }
 
     .badge-l {
-        @apply rounded-md gap-1 min-w-6
+        @apply rounded-md gap-1 min-w-[1.5rem]
     }
 
     /* m is for the regular button */
     .badge-m {
-        @apply rounded-md gap-[3px] min-w-5
+        @apply rounded-md gap-[3px] min-w-[1.25rem]
     }
 
     .badge-s {
