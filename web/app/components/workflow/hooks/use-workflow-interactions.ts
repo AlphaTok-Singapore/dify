@@ -4,7 +4,7 @@ import {
 } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useReactFlow, useStoreApi } from 'reactflow'
-import produce from 'immer'
+import { produce } from 'immer'
 import { useStore, useWorkflowStore } from '../store'
 import {
   CUSTOM_NODE, DSL_EXPORT_CHECK,

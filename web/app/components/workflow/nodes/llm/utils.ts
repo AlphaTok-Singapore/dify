@@ -2,7 +2,7 @@ import { ArrayType, Type } from './types'
 import type { ArrayItems, Field, LLMNodeType } from './types'
 import type { Schema, ValidationError } from 'jsonschema'
 import { Validator } from 'jsonschema'
-import produce from 'immer'
+import { produce } from 'immer'
 import { z } from 'zod'
 
 export const checkNodeValid = (payload: LLMNodeType) => {

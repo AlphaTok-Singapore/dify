@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import produce from 'immer'
+import { produce } from 'immer'
 import { BlockEnum } from '../types'
 import {
   NODES_EXTRA_DATA,

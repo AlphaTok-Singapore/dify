@@ -9,14 +9,18 @@ RUN apk add --no-cache \
     git \
     curl
 
-# 复制 package 文件
-COPY web/package*.json ./
+RUN npm install -g pnpm
 
-# 安装依赖 (使用 npm install 而不是 npm ci)
-RUN npm install --only=production
+# 复制 package 文件
+COPY package*.json pnpm-lock.yaml ./
+ENV NODE_ENV=production
+RUN pnpm install --prod
 
 # 复制应用代码
-COPY web/ ./
+COPY ./ ./
+
+# 关键：加大 Node 构建内存限制
+ENV NODE_OPTIONS="--max-old-space-size=4096"
 
 # 构建应用
 RUN npm run build

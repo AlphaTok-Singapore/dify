@@ -10,6 +10,7 @@ RUN apt-get update && apt-get install -y \
     curl \
     git \
     libpq-dev \
+    netcat-openbsd \
     && rm -rf /var/lib/apt/lists/*
 
 # 复制 requirements 文件

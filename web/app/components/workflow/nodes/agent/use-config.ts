@@ -12,7 +12,7 @@ import { useCheckInstalled, useFetchPluginsInMarketPlaceByIds } from '@/service/
 import type { Memory, Var } from '../../types'
 import { VarType as VarKindType } from '../../types'
 import useAvailableVarList from '../_base/hooks/use-available-var-list'
-import produce from 'immer'
+import { produce } from 'immer'
 
 export type StrategyStatus = {
   plugin: {

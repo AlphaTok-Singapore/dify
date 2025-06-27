@@ -18,7 +18,7 @@ import {
 } from '@/service/use-workflow'
 import { useCallback, useEffect, useState } from 'react'
 import { isConversationVar, isENV, isSystemVar } from '../nodes/_base/components/variable/utils'
-import produce from 'immer'
+import { produce } from 'immer'
 import type { Node } from '@/app/components/workflow/types'
 import { useNodesInteractionsWithoutSync } from './use-nodes-interactions-without-sync'
 import { useEdgesInteractionsWithoutSync } from './use-edges-interactions-without-sync'

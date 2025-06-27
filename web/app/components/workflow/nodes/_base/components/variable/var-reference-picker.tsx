@@ -9,7 +9,7 @@ import {
   RiLoader4Line,
   RiMoreLine,
 } from '@remixicon/react'
-import produce from 'immer'
+import { produce } from 'immer'
 import { useReactFlow, useStoreApi } from 'reactflow'
 import RemoveButton from '../remove-button'
 import useAvailableVarList from '../../hooks/use-available-var-list'
