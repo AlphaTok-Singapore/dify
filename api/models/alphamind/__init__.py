@@ -6,7 +6,7 @@ AlphaMind 数据模型
 import json
 import uuid
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 from sqlalchemy import DECIMAL, BigInteger, Boolean, Column, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.dialects.postgresql import JSONB, UUID
@@ -52,7 +52,11 @@ class AlphaMindMessage(db.Model):
     __tablename__ = 'alphamind_messages'
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    conversation_id = Column(UUID(as_uuid=True), ForeignKey('alphamind_conversations.id', ondelete='CASCADE'), nullable=False)
+    conversation_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey('alphamind_conversations.id', ondelete='CASCADE'),
+        nullable=False
+    )
     role = Column(String(20), nullable=False)  # user, assistant, system
     content = Column(Text, nullable=False)
     message_type = Column(String(50), default='text')  # text, image, file, workflow_result

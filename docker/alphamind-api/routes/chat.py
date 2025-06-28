@@ -1,7 +1,6 @@
 from flask import Blueprint, request, jsonify
 from models.alphamind import db, Conversation, Message
 from datetime import datetime
-import json
 
 chat_bp = Blueprint('chat', __name__)
 

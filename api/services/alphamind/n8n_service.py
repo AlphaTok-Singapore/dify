@@ -61,7 +61,7 @@ class N8NService:
             logger.exception("获取工作流详情失败")
             return None
 
-    def execute_workflow(self, workflow_id: str, input_data: dict[str, Any] = None) -> dict[str, Any]:
+    def execute_workflow(self, workflow_id: str, input_data: Optional[dict[str, Any]] = None) -> dict[str, Any]:
         """执行工作流"""
         try:
             payload = {
@@ -92,7 +92,7 @@ class N8NService:
                 'message': '工作流执行异常'
             }
 
-    def trigger_webhook(self, webhook_path: str, data: dict[str, Any] = None) -> dict[str, Any]:
+    def trigger_webhook(self, webhook_path: str, data: Optional[dict[str, Any]] = None) -> dict[str, Any]:
         """触发webhook"""
         try:
             webhook_url = f"{self.n8n_endpoint}/webhook/{webhook_path}"
@@ -121,7 +121,7 @@ class N8NService:
                 'message': 'Webhook触发异常'
             }
 
-    def get_executions(self, workflow_id: str = None, limit: int = 20) -> list[dict[str, Any]]:
+    def get_executions(self, workflow_id: Optional[str] = None, limit: int = 20) -> list[dict[str, Any]]:
         """获取执行历史"""
         try:
             params = {'limit': limit}

@@ -79,8 +79,13 @@ class WorkflowService:
             }
         ]
 
-    def execute_workflow(self, workflow_id: str, input_data: dict[str, Any] = None,
-                        agent_id: int = None, conversation_id: int = None) -> dict[str, Any]:
+    def execute_workflow(
+        self,
+        workflow_id: str,
+        input_data: Optional[dict[str, Any]] = None,
+        agent_id: Optional[int] = None,
+        conversation_id: Optional[int] = None
+    ) -> dict[str, Any]:
         """执行工作流"""
         try:
             # 创建执行记录
@@ -196,7 +201,12 @@ class WorkflowService:
         }
         return workflow_names.get(workflow_id, f'工作流_{workflow_id}')
 
-    def get_executions(self, agent_id: int = None, status: str = None, limit: int = 50) -> list[dict[str, Any]]:
+    def get_executions(
+        self,
+        agent_id: Optional[int] = None,
+        status: Optional[str] = None,
+        limit: int = 50
+    ) -> list[dict[str, Any]]:
         """获取工作流执行记录"""
         try:
             query = WorkflowExecution.query

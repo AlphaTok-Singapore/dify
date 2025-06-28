@@ -292,7 +292,12 @@ def stream_message(conversation_id):
                     attachments=data.get('attachments', [])
                 )
 
-                yield f"data: {jsonify({'type': 'user_message', 'data': user_message.to_dict()}).get_data(as_text=True)}\n\n"
+                yield (
+                    "data: "
+                    + jsonify({'type': 'user_message', 'data': user_message.to_dict()})
+                        .get_data(as_text=True)
+                    + "\n\n"
+                )
 
                 # 流式生成AI回复
                 for chunk in ChatService.stream_ai_response(conversation, user_message):
