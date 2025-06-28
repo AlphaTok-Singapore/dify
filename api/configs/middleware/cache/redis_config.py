@@ -11,7 +11,7 @@ class RedisConfig(BaseSettings):
 
     REDIS_HOST: str = Field(
         description="Hostname or IP address of the Redis server",
-        default="localhost",
+        default="redis",
     )
 
     REDIS_PORT: PositiveInt = Field(
@@ -26,7 +26,7 @@ class RedisConfig(BaseSettings):
 
     REDIS_PASSWORD: Optional[str] = Field(
         description="Password for Redis authentication (if required)",
-        default=None,
+        default="dify123456",
     )
 
     REDIS_DB: NonNegativeInt = Field(

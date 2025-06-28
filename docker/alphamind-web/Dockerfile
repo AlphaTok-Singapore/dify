@@ -12,18 +12,15 @@ RUN apk add --no-cache \
 # 复制 package 文件
 COPY package*.json ./
 
-# 安装依赖 (使用 npm install 而不是 npm ci)
-RUN npm install --only=production
+# 安装依赖 (开发模式，安装全部依赖)
+RUN npm install
 
 # 复制应用代码
 COPY . ./
 
-# 构建应用
-RUN npm run build
-
 # 暴露端口
 EXPOSE 3000
 
-# 启动应用
-CMD ["npm", "start"]
+# 启动应用（开发模式）
+CMD ["npm", "run", "dev"]
 

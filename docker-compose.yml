@@ -45,9 +45,10 @@ services:
   # Dify API 服务
   api:
     build:
-      context: .
-      dockerfile: docker/api/Dockerfile
-    restart: always
+      context: ./api
+      dockerfile: Dockerfile
+    image: my-dify-api:main
+    restart: "no"
     environment:
       MODE: api
       LOG_LEVEL: INFO
@@ -66,6 +67,7 @@ services:
       MIGRATION_ENABLED: 'true'
       WEAVIATE_ENDPOINT: http://weaviate:8080
       WEAVIATE_API_KEY: WVF5YThaHlkYwhGUSmCRgsX3tD5ngdN8pkih
+      OPENDAL_FS_ROOT: /app/storage
     depends_on:
       - db
       - redis
@@ -78,9 +80,9 @@ services:
   # Dify Worker 服务
   worker:
     build:
-      context: .
-      dockerfile: docker/api/Dockerfile
-    restart: always
+      context: ./api
+      dockerfile: Dockerfile
+    restart: "no"
     environment:
       MODE: worker
       LOG_LEVEL: INFO
@@ -90,6 +92,7 @@ services:
       CELERY_BROKER_URL: redis://:dify123456@redis:6379/1
       WEAVIATE_ENDPOINT: http://weaviate:8080
       WEAVIATE_API_KEY: WVF5YThaHlkYwhGUSmCRgsX3tD5ngdN8pkih
+      OPENDAL_FS_ROOT: /app/storage
     depends_on:
       - db
       - redis
@@ -127,9 +130,9 @@ services:
       - redis
       - api
     ports:
-      - "5002:5002"
+      - "5100:8000"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5002/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -141,13 +144,13 @@ services:
       dockerfile: Dockerfile
     restart: always
     environment:
-      NEXT_PUBLIC_API_URL: http://localhost:5002
+      NEXT_PUBLIC_API_URL: http://localhost:5100
       NEXT_PUBLIC_DIFY_API_URL: http://localhost:5001
     depends_on:
       alphamind-api:
         condition: service_healthy
     ports:
-      - "3001:3000"
+      - "3100:3000"
 
   # n8n 工作流引擎 (兼容现有数据)
   n8n:

@@ -3,11 +3,11 @@ AlphaMind 聊天控制器
 集成到 Dify API 中的 AlphaMind 聊天功能
 """
 
-from flask import Blueprint, request, jsonify, current_app
-from flask_login import login_required, current_user
 import logging
-import json
 from datetime import datetime
+
+from flask import Blueprint, jsonify, request
+from flask_login import current_user, login_required
 
 # 创建蓝图
 chat_bp = Blueprint('alphamind_chat', __name__, url_prefix='/api/alphamind/chat')
@@ -21,7 +21,7 @@ def get_conversations():
     try:
         page = request.args.get('page', 1, type=int)
         limit = request.args.get('limit', 20, type=int)
-        
+
         # 模拟数据 - 实际应该从数据库获取
         conversations = [
             {
@@ -35,7 +35,7 @@ def get_conversations():
                 'message_count': 15
             },
             {
-                'id': 'conv_2', 
+                'id': 'conv_2',
                 'title': '数据分析任务',
                 'agent_id': 2,
                 'user_id': current_user.id,
@@ -45,7 +45,7 @@ def get_conversations():
                 'message_count': 8
             }
         ]
-        
+
         return jsonify({
             'success': True,
             'data': conversations,
@@ -56,9 +56,9 @@ def get_conversations():
                 'pages': 1
             }
         })
-        
+
     except Exception as e:
-        logger.error(f"Failed to get conversations: {str(e)}")
+        logger.exception("Failed to get conversations")
         return jsonify({
             'success': False,
             'error': '获取对话列表失败'
@@ -72,13 +72,13 @@ def create_conversation():
         data = request.get_json()
         agent_id = data.get('agent_id')
         title = data.get('title', '新对话')
-        
+
         if not agent_id:
             return jsonify({
                 'success': False,
                 'error': '智能体ID不能为空'
             }), 400
-        
+
         # 创建新对话
         conversation = {
             'id': f'conv_{datetime.now().timestamp()}',
@@ -90,14 +90,14 @@ def create_conversation():
             'updated_at': datetime.now().isoformat(),
             'message_count': 0
         }
-        
+
         return jsonify({
             'success': True,
             'data': conversation
         })
-        
+
     except Exception as e:
-        logger.error(f"Failed to create conversation: {str(e)}")
+        logger.exception("Failed to create conversation")
         return jsonify({
             'success': False,
             'error': '创建对话失败'
@@ -110,7 +110,7 @@ def get_messages(conversation_id):
     try:
         page = request.args.get('page', 1, type=int)
         limit = request.args.get('limit', 50, type=int)
-        
+
         # 模拟消息数据
         messages = [
             {
@@ -126,13 +126,16 @@ def get_messages(conversation_id):
                 'id': 'msg_2',
                 'conversation_id': conversation_id,
                 'role': 'assistant',
-                'content': '您好！我很乐意帮您分析数据集。请您提供数据集的详细信息，包括数据类型、大小和您希望进行的分析类型。',
+                'content': (
+                    '您好！我很乐意帮您分析数据集。请您提供数据集的详细信息，'
+                    '包括数据类型、大小和您希望进行的分析类型。'
+                ),
                 'agent_id': 1,
                 'created_at': '2024-01-20T10:00:30Z',
                 'metadata': {}
             }
         ]
-        
+
         return jsonify({
             'success': True,
             'data': messages,
@@ -143,9 +146,9 @@ def get_messages(conversation_id):
                 'pages': 1
             }
         })
-        
+
     except Exception as e:
-        logger.error(f"Failed to get messages: {str(e)}")
+        logger.exception("Failed to get messages")
         return jsonify({
             'success': False,
             'error': '获取消息失败'
@@ -159,19 +162,19 @@ def send_message(conversation_id):
         data = request.get_json()
         content = data.get('content', '').strip()
         agent_id = data.get('agent_id')
-        
+
         if not content:
             return jsonify({
                 'success': False,
                 'error': '消息内容不能为空'
             }), 400
-        
+
         if not agent_id:
             return jsonify({
                 'success': False,
                 'error': '智能体ID不能为空'
             }), 400
-        
+
         # 创建用户消息
         user_message = {
             'id': f'msg_user_{datetime.now().timestamp()}',
@@ -182,7 +185,7 @@ def send_message(conversation_id):
             'created_at': datetime.now().isoformat(),
             'metadata': {}
         }
-        
+
         # 模拟智能体响应
         assistant_response = generate_mock_response(content, agent_id)
         assistant_message = {
@@ -194,7 +197,7 @@ def send_message(conversation_id):
             'created_at': datetime.now().isoformat(),
             'metadata': {}
         }
-        
+
         return jsonify({
             'success': True,
             'data': {
@@ -202,9 +205,9 @@ def send_message(conversation_id):
                 'assistant_message': assistant_message
             }
         })
-        
+
     except Exception as e:
-        logger.error(f"Failed to send message: {str(e)}")
+        logger.exception("Failed to send message")
         return jsonify({
             'success': False,
             'error': '发送消息失败'
@@ -220,9 +223,9 @@ def delete_conversation(conversation_id):
             'success': True,
             'message': '对话已删除'
         })
-        
+
     except Exception as e:
-        logger.error(f"Failed to delete conversation: {str(e)}")
+        logger.exception("Failed to delete conversation")
         return jsonify({
             'success': False,
             'error': '删除对话失败'
@@ -252,10 +255,10 @@ def generate_mock_response(user_input: str, agent_id: int) -> str:
             "工作流已经启动，我会实时为您更新执行状态。"
         ]
     }
-    
+
     agent_responses = responses.get(agent_id, responses[1])
-    import random
-    return random.choice(agent_responses)
+    import secrets
+    return secrets.choice(agent_responses)
 
 # 错误处理
 @chat_bp.errorhandler(404)

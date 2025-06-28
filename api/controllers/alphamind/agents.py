@@ -2,10 +2,11 @@
 AlphaMind 智能体控制器
 """
 
-from flask import Blueprint, request, jsonify
-from flask_login import login_required, current_user
 import logging
 from datetime import datetime
+
+from flask import Blueprint, jsonify, request
+from flask_login import login_required
 
 agents_bp = Blueprint('alphamind_agents', __name__, url_prefix='/api/alphamind/agents')
 logger = logging.getLogger(__name__)
@@ -52,14 +53,14 @@ def get_agents():
                 }
             }
         ]
-        
+
         return jsonify({
             'success': True,
             'data': agents
         })
-        
+
     except Exception as e:
-        logger.error(f"Failed to get agents: {str(e)}")
+        logger.exception("Failed to get agents")
         return jsonify({
             'success': False,
             'error': '获取智能体列表失败'
@@ -71,7 +72,7 @@ def create_agent():
     """创建智能体"""
     try:
         data = request.get_json()
-        
+
         # 验证必需字段
         required_fields = ['name', 'description', 'type', 'model']
         for field in required_fields:
@@ -80,7 +81,7 @@ def create_agent():
                     'success': False,
                     'error': f'{field} 不能为空'
                 }), 400
-        
+
         # 创建新智能体
         agent = {
             'id': int(datetime.now().timestamp()),
@@ -95,14 +96,14 @@ def create_agent():
             'createdAt': datetime.now().strftime('%Y-%m-%d'),
             'config': data.get('config', {})
         }
-        
+
         return jsonify({
             'success': True,
             'data': agent
         })
-        
+
     except Exception as e:
-        logger.error(f"Failed to create agent: {str(e)}")
+        logger.exception("Failed to create agent")
         return jsonify({
             'success': False,
             'error': '创建智能体失败'
@@ -114,7 +115,7 @@ def update_agent(agent_id):
     """更新智能体"""
     try:
         data = request.get_json()
-        
+
         # 模拟更新操作
         updated_agent = {
             'id': agent_id,
@@ -129,14 +130,14 @@ def update_agent(agent_id):
             'createdAt': '2024-01-15',
             'config': data.get('config', {})
         }
-        
+
         return jsonify({
             'success': True,
             'data': updated_agent
         })
-        
+
     except Exception as e:
-        logger.error(f"Failed to update agent: {str(e)}")
+        logger.exception("Failed to update agent")
         return jsonify({
             'success': False,
             'error': '更新智能体失败'
@@ -151,9 +152,9 @@ def delete_agent(agent_id):
             'success': True,
             'message': '智能体已删除'
         })
-        
+
     except Exception as e:
-        logger.error(f"Failed to delete agent: {str(e)}")
+        logger.exception("Failed to delete agent")
         return jsonify({
             'success': False,
             'error': '删除智能体失败'

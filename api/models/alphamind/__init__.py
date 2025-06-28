@@ -3,13 +3,13 @@ AlphaMind 数据模型
 文件位置: api/models/alphamind/__init__.py
 """
 
-from datetime import datetime
-from typing import Optional, Dict, Any, List
 import json
 import uuid
+from datetime import datetime
+from typing import Any, Dict, List, Optional
 
-from sqlalchemy import Column, String, Text, Integer, Boolean, DateTime, ForeignKey, DECIMAL, BigInteger
-from sqlalchemy.dialects.postgresql import UUID, JSONB
+from sqlalchemy import DECIMAL, BigInteger, Boolean, Column, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
@@ -33,7 +33,7 @@ class AlphaMindConversation(db.Model):
     messages = relationship("AlphaMindMessage", back_populates="conversation", cascade="all, delete-orphan")
     workflow_executions = relationship("AlphaMindWorkflowExecution", back_populates="conversation")
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             'id': str(self.id),
             'user_id': str(self.user_id),
@@ -62,7 +62,7 @@ class AlphaMindMessage(db.Model):
     # 关系
     conversation = relationship("AlphaMindConversation", back_populates="messages")
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             'id': str(self.id),
             'conversation_id': str(self.conversation_id),
@@ -94,7 +94,7 @@ class AlphaMindAgent(db.Model):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             'id': str(self.id),
             'user_id': str(self.user_id),
@@ -131,7 +131,7 @@ class AlphaMindDataset(db.Model):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             'id': str(self.id),
             'user_id': str(self.user_id),
@@ -164,7 +164,7 @@ class AlphaMindKnowledgeBase(db.Model):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             'id': str(self.id),
             'user_id': str(self.user_id),
@@ -200,7 +200,7 @@ class AlphaMindWorkflowExecution(db.Model):
     # 关系
     conversation = relationship("AlphaMindConversation", back_populates="workflow_executions")
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             'id': str(self.id),
             'user_id': str(self.user_id),
@@ -231,7 +231,7 @@ class AlphaMindMCPTool(db.Model):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             'id': str(self.id),
             'name': self.name,
@@ -247,12 +247,12 @@ class AlphaMindMCPTool(db.Model):
 
 # 导出所有模型
 __all__ = [
-    'AlphaMindConversation',
-    'AlphaMindMessage',
     'AlphaMindAgent',
+    'AlphaMindConversation',
     'AlphaMindDataset',
     'AlphaMindKnowledgeBase',
-    'AlphaMindWorkflowExecution',
-    'AlphaMindMCPTool'
+    'AlphaMindMCPTool',
+    'AlphaMindMessage',
+    'AlphaMindWorkflowExecution'
 ]
 

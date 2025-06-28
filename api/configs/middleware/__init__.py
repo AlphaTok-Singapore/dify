@@ -97,7 +97,7 @@ class KeywordStoreConfig(BaseSettings):
 class DatabaseConfig(BaseSettings):
     DB_HOST: str = Field(
         description="Hostname or IP address of the database server.",
-        default="localhost",
+        default="db",
     )
 
     DB_PORT: PositiveInt = Field(
@@ -107,12 +107,12 @@ class DatabaseConfig(BaseSettings):
 
     DB_USERNAME: str = Field(
         description="Username for database authentication.",
-        default="postgres",
+        default="dify",
     )
 
     DB_PASSWORD: str = Field(
         description="Password for database authentication.",
-        default="",
+        default="dify123456",
     )
 
     DB_DATABASE: str = Field(

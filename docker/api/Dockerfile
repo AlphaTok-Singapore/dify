@@ -13,12 +13,6 @@ RUN apt-get update && apt-get install -y \
     netcat-openbsd \
     && rm -rf /var/lib/apt/lists/*
 
-# 复制 requirements 文件
-COPY api/requirements.txt /app/requirements.txt
-
-# 安装 Python 依赖
-RUN pip install --no-cache-dir -r requirements.txt
-
 # 复制应用代码
 COPY api/ /app/
 COPY docker/api/entrypoint.sh /app/entrypoint.sh

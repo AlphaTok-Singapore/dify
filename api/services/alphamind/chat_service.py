@@ -3,16 +3,20 @@ AlphaMind 聊天服务
 文件位置: api/services/alphamind/chat_service.py
 """
 
-import json
-import requests
-from typing import Dict, Any, Optional, List
 from datetime import datetime
+from typing import Any, Optional
 
-from api.models.alphamind import AlphaMindConversation, AlphaMindMessage, AlphaMindAgent, AlphaMindWorkflowExecution
-from api.services.alphamind.n8n_service import AlphaMindN8nService
 from api.core.alphamind.ai_engine import AlphaMindAIEngine
+from api.models.alphamind import AlphaMindAgent, AlphaMindConversation, AlphaMindMessage, AlphaMindWorkflowExecution
+from api.services.alphamind.n8n_service import AlphaMindN8nService
+
+from core.model_runtime.entities.message_entities import (
+    AssistantPromptMessage,
+    PromptMessage,
+    SystemPromptMessage,
+    UserPromptMessage,
+)
 from extensions.ext_database import db
-from core.model_runtime.entities.message_entities import PromptMessage, UserPromptMessage, AssistantPromptMessage, SystemPromptMessage
 
 
 class AlphaMindChatService:
@@ -27,7 +31,7 @@ class AlphaMindChatService:
         conversation: AlphaMindConversation,
         user_message: AlphaMindMessage,
         agent: Optional[AlphaMindAgent] = None
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """生成AI回复"""
         try:
             # 构建对话历史
@@ -78,7 +82,7 @@ class AlphaMindChatService:
         conversation: AlphaMindConversation,
         current_message: AlphaMindMessage,
         max_messages: int = 20
-    ) -> List[PromptMessage]:
+    ) -> list[PromptMessage]:
         """构建对话历史"""
         messages = []
         
@@ -109,9 +113,9 @@ class AlphaMindChatService:
     def _handle_tool_calls(
         self,
         conversation: AlphaMindConversation,
-        tool_calls: List[Dict[str, Any]],
+        tool_calls: list[dict[str, Any]],
         agent: Optional[AlphaMindAgent] = None
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """处理工具调用"""
         results = []
         
@@ -156,9 +160,9 @@ class AlphaMindChatService:
         self,
         conversation: AlphaMindConversation,
         workflow_id: str,
-        input_data: Dict[str, Any],
+        input_data: dict[str, Any],
         user_id: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """执行n8n工作流"""
         try:
             # 记录工作流执行
@@ -208,7 +212,7 @@ class AlphaMindChatService:
     def _read_file(self, file_path: str) -> str:
         """文件读取工具"""
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, encoding='utf-8') as f:
                 return f.read()
         except Exception as e:
             return f"读取文件失败: {str(e)}"

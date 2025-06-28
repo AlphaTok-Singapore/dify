@@ -15,8 +15,8 @@ from extensions.ext_mail import mail
 celery_broker_url = dify_config.CELERY_BROKER_URL
 
 parsed = urlparse(celery_broker_url)
-host = parsed.hostname or "localhost"
-port = parsed.port or 6379
+host = parsed.hostname or getattr(dify_config, 'REDIS_HOST', 'redis')
+port = parsed.port or getattr(dify_config, 'REDIS_PORT', 6379)
 password = parsed.password or None
 redis_db = parsed.path.strip("/") or "1"  # type: ignore
 
