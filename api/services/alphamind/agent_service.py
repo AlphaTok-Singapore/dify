@@ -1,180 +1,222 @@
 """
-智能体管理服务
+Agent Service for AlphaMind
+
+Business logic for agent management including:
+- Agent creation and configuration
+- Agent performance monitoring
+- Agent training and deployment
 """
 
 import logging
 from datetime import datetime
-from typing import Any, Optional
+from typing import Optional
 
-from models.agent import Agent
+from ...models.alphamind.agent import Agent
 
 logger = logging.getLogger(__name__)
 
+
 class AgentService:
-    """智能体管理服务类"""
+    """Service class for agent operations"""
 
-    def __init__(self, db):
-        self.db = db
+    def __init__(self):
+        self.agents = {}  # In-memory storage for demo
 
-    def get_all_agents(self) -> list[dict[str, Any]]:
-        """获取所有智能体"""
+    def get_user_agents(self, user_id: str, status: str | None = None, agent_type: str | None = None,
+                       page: int = 1, limit: int = 20) -> list[dict]:
+        """Get agents for a user"""
         try:
-            agents = Agent.query.all()
-            return [agent.to_dict() for agent in agents]
+            user_agents = [
+                agent for agent in self.agents.values()
+                if agent.user_id == user_id
+            ]
+
+            # Apply filters
+            if status:
+                user_agents = [agent for agent in user_agents if agent.status == status]
+            if agent_type:
+                user_agents = [agent for agent in user_agents if agent.agent_type == agent_type]
+
+            # Sort by updated_at desc
+            user_agents.sort(key=lambda x: x.updated_at, reverse=True)
+
+            # Pagination
+            start = (page - 1) * limit
+            end = start + limit
+            paginated = user_agents[start:end]
+
+            return [agent.to_dict() for agent in paginated]
+
         except Exception as e:
-            logger.exception("获取智能体列表失败")
+            logger.exception("Error getting user agents")
             raise
 
-    def get_agent_by_id(self, agent_id: int) -> Optional[dict[str, Any]]:
-        """根据ID获取智能体"""
+    def create_agent(self, user_id: str, name: str, description: str, agent_type: str,
+                    config: dict | None = None, skills: list[str] | None = None,
+                    knowledge_bases: list[str] | None = None) -> dict:
+        """Create a new agent"""
         try:
-            agent = Agent.query.get(agent_id)
-            return agent.to_dict() if agent else None
-        except Exception as e:
-            logger.exception("获取智能体失败")
-            raise
-
-    def get_agent_by_name(self, name: str) -> Optional[dict[str, Any]]:
-        """根据名称获取智能体"""
-        try:
-            agent = Agent.query.filter_by(name=name).first()
-            return agent.to_dict() if agent else None
-        except Exception as e:
-            logger.exception("获取智能体失败")
-            raise
-
-    def create_agent(self, data: dict[str, Any]) -> dict[str, Any]:
-        """创建新智能体"""
-        try:
-            # 验证必需字段
-            if not data.get('name'):
-                raise ValueError("智能体名称不能为空")
-
-            # 检查名称是否已存在
-            existing_agent = Agent.query.filter_by(name=data['name']).first()
-            if existing_agent:
-                raise ValueError(f"智能体名称 '{data['name']}' 已存在")
-
-            # 创建智能体
             agent = Agent(
-                name=data['name'],
-                description=data.get('description', ''),
-                type=data.get('type', 'general'),
-                status=data.get('status', 'active'),
-                config=data.get('config', {}),
-                mcp_tools=data.get('mcp_tools', []),
-                n8n_workflows=data.get('n8n_workflows', []),
-                created_by=data.get('created_by', 'system')
+                user_id=user_id,
+                name=name,
+                description=description,
+                agent_type=agent_type,
+                config=config or {},
+                skills=skills or [],
+                knowledge_bases=knowledge_bases or []
             )
 
-            self.db.session.add(agent)
-            self.db.session.commit()
+            self.agents[agent.id] = agent
 
-            logger.info(f"智能体创建成功: {agent.name}")
             return agent.to_dict()
 
         except Exception as e:
-            self.db.session.rollback()
-            logger.exception("创建智能体失败")
+            logger.exception("Error creating agent")
             raise
 
-    def update_agent(self, agent_id: int, data: dict[str, Any]) -> Optional[dict[str, Any]]:
-        """更新智能体"""
+    def get_agent_details(self, agent_id: str) -> Optional[dict]:
+        """Get agent details"""
         try:
-            agent = Agent.query.get(agent_id)
+            agent = self.agents.get(agent_id)
             if not agent:
                 return None
 
-            # 更新字段
-            if 'name' in data:
-                # 检查新名称是否与其他智能体冲突
-                existing_agent = Agent.query.filter(
-                    Agent.name == data['name'],
-                    Agent.id != agent_id
-                ).first()
-                if existing_agent:
-                    raise ValueError(f"智能体名称 '{data['name']}' 已存在")
-                agent.name = data['name']
-
-            if 'description' in data:
-                agent.description = data['description']
-            if 'type' in data:
-                agent.type = data['type']
-            if 'status' in data:
-                agent.status = data['status']
-            if 'config' in data:
-                agent.config = data['config']
-            if 'mcp_tools' in data:
-                agent.mcp_tools = data['mcp_tools']
-            if 'n8n_workflows' in data:
-                agent.n8n_workflows = data['n8n_workflows']
-
-            agent.updated_at = datetime.utcnow()
-
-            self.db.session.commit()
-
-            logger.info(f"智能体更新成功: {agent.name}")
             return agent.to_dict()
 
         except Exception as e:
-            self.db.session.rollback()
-            logger.exception("更新智能体失败")
+            logger.exception("Error getting agent details")
             raise
 
-    def delete_agent(self, agent_id: int) -> bool:
-        """删除智能体"""
+    def update_agent(self, agent_id: str, updates: dict) -> Optional[dict]:
+        """Update an agent"""
         try:
-            agent = Agent.query.get(agent_id)
+            agent = self.agents.get(agent_id)
+            if not agent:
+                return None
+
+            # Update fields
+            if 'name' in updates:
+                agent.name = updates['name']
+            if 'description' in updates:
+                agent.description = updates['description']
+            if 'config' in updates:
+                agent.config.update(updates['config'])
+            if 'skills' in updates:
+                agent.skills = updates['skills']
+            if 'knowledge_bases' in updates:
+                agent.knowledge_bases = updates['knowledge_bases']
+
+            agent.updated_at = datetime.utcnow()
+
+            return agent.to_dict()
+
+        except Exception as e:
+            logger.exception("Error updating agent")
+            raise
+
+    def delete_agent(self, agent_id: str) -> bool:
+        """Delete an agent"""
+        try:
+            if agent_id in self.agents:
+                del self.agents[agent_id]
+                return True
+            return False
+
+        except Exception as e:
+            logger.exception("Error deleting agent")
+            raise
+
+    def activate_agent(self, agent_id: str) -> bool:
+        """Activate an agent"""
+        try:
+            agent = self.agents.get(agent_id)
             if not agent:
                 return False
 
-            # 检查是否有关联的对话或工作流执行
-            if agent.conversations or agent.workflow_executions:
-                # 软删除：将状态设置为 inactive
-                agent.status = 'inactive'
-                agent.updated_at = datetime.utcnow()
-                self.db.session.commit()
-                logger.info(f"智能体软删除成功: {agent.name}")
-            else:
-                # 硬删除：直接删除记录
-                self.db.session.delete(agent)
-                self.db.session.commit()
-                logger.info(f"智能体硬删除成功: {agent.name}")
+            agent.activate()
+            return True
+
+        except Exception as e:
+            logger.exception("Error activating agent")
+            raise
+
+    def deactivate_agent(self, agent_id: str) -> bool:
+        """Deactivate an agent"""
+        try:
+            agent = self.agents.get(agent_id)
+            if not agent:
+                return False
+
+            agent.deactivate()
+            return True
+
+        except Exception as e:
+            logger.exception("Error deactivating agent")
+            raise
+
+    def start_training(self, agent_id: str, training_data: list | None = None) -> bool:
+        """Start training an agent"""
+        try:
+            agent = self.agents.get(agent_id)
+            if not agent:
+                return False
+
+            agent.start_training()
+            # Here you would implement actual training logic
 
             return True
 
         except Exception as e:
-            self.db.session.rollback()
-            logger.exception("删除智能体失败")
+            logger.exception("Error starting agent training")
             raise
 
-    def get_agents_by_type(self, agent_type: str) -> list[dict[str, Any]]:
-        """根据类型获取智能体"""
+    def get_agent_analytics(self, agent_id: str, days: int = 30) -> Optional[dict]:
+        """Get agent performance analytics"""
         try:
-            agents = Agent.query.filter_by(type=agent_type, status='active').all()
-            return [agent.to_dict() for agent in agents]
+            agent = self.agents.get(agent_id)
+            if not agent:
+                return None
+
+            # Mock analytics data
+            return {
+                'agent_id': agent_id,
+                'period_days': days,
+                'conversations': agent.conversations_count,
+                'messages': agent.messages_count,
+                'accuracy': agent.accuracy_score,
+                'response_time_avg': 1.2,
+                'satisfaction_score': 4.5,
+                'usage_trend': [10, 15, 12, 18, 20, 25, 22]
+            }
+
         except Exception as e:
-            logger.exception("获取智能体列表失败")
+            logger.exception("Error getting agent analytics")
             raise
 
-    def get_active_agents(self) -> list[dict[str, Any]]:
-        """获取活跃的智能体"""
+    def get_agent_skills(self, agent_id: str) -> list[str]:
+        """Get agent skills"""
         try:
-            agents = Agent.query.filter_by(status='active').all()
-            return [agent.to_dict() for agent in agents]
+            agent = self.agents.get(agent_id)
+            if not agent:
+                return []
+
+            return agent.skills
+
         except Exception as e:
-            logger.exception("获取活跃智能体列表失败")
+            logger.exception("Error getting agent skills")
             raise
 
-    def search_agents(self, keyword: str) -> list[dict[str, Any]]:
-        """搜索智能体"""
+    def add_skill_to_agent(self, agent_id: str, skill_id: str) -> bool:
+        """Add a skill to an agent"""
         try:
-            agents = Agent.query.filter(
-                Agent.name.contains(keyword) |
-                Agent.description.contains(keyword)
-            ).all()
-            return [agent.to_dict() for agent in agents]
+            agent = self.agents.get(agent_id)
+            if not agent:
+                return False
+
+            agent.add_skill(skill_id)
+            return True
+
         except Exception as e:
-            logger.exception("搜索智能体失败")
+            logger.exception("Error adding skill to agent")
             raise
 

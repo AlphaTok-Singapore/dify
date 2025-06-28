@@ -1,47 +1,21 @@
 'use client'
 
 import React from 'react'
-import { Navigation } from './Navigation'
-import { Header } from './Header'
-import { Sidebar } from './Sidebar'
-import { useAlphaMindContext } from '../../../context/alphamind/AlphaMindContext'
-import { cn } from '../utils'
+import Header from './Header'
+import Sidebar from './Sidebar'
 
 type AlphaMindLayoutProps = {
   children: React.ReactNode
 }
 
-export function AlphaMindLayout({ children }: AlphaMindLayoutProps) {
-  const { sidebarOpen, setSidebarOpen, currentModule } = useAlphaMindContext()
-
+export default function AlphaMindLayout({ children }: AlphaMindLayoutProps) {
   return (
-    <div className="alphamind-layout min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Header */}
-      <Header
-        onMenuClick={() => setSidebarOpen(!sidebarOpen)}
-        currentModule={currentModule}
-      />
-
-      {/* Layout Body */}
-      <div className="layout-body flex">
-        {/* Sidebar */}
-        <Sidebar
-          isOpen={sidebarOpen}
-          onClose={() => setSidebarOpen(false)}
-        />
-
-        {/* Main Content */}
-        <main className={cn(
-          'main-content flex-1 transition-all duration-300',
-          sidebarOpen ? 'ml-64' : 'ml-16',
-        )}>
-          {/* Navigation Breadcrumb */}
-          <Navigation />
-
-          {/* Page Content */}
-          <div className="page-content">
-            {children}
-          </div>
+    <div className="flex h-screen bg-gray-100">
+      <Sidebar />
+      <div className="flex flex-1 flex-col overflow-hidden">
+        <Header />
+        <main className="flex-1 overflow-y-auto overflow-x-hidden bg-gray-50 p-6">
+          {children}
         </main>
       </div>
     </div>

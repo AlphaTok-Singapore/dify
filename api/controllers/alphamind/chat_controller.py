@@ -1,372 +1,276 @@
-# AlphaMind聊天控制器 - 集成到Dify API系统
+"""
+Chat Controller for AlphaMind
+
+Handles all chat-related HTTP requests including:
+- Creating new conversations
+- Sending messages
+- Retrieving conversation history
+- Managing chat sessions
+"""
+
 import logging
 
-from flask import Blueprint, current_app, jsonify, request
-from flask_login import current_user, login_required  # 使用Dify的认证系统
-from werkzeug.exceptions import BadRequest, NotFound
+from flask import Blueprint, jsonify, request
+from flask_cors import cross_origin
 
-from libs.exception import BaseHTTPException
-from services.alphamind.chat_service import ChatService
+from ...services.alphamind.chat_service import ChatService
 
-# 创建蓝图
-alphamind_chat_bp = Blueprint('alphamind_chat', __name__, url_prefix='/console/api/alphamind/chat')
+# Create blueprint
+chat_bp = Blueprint('alphamind_chat', __name__, url_prefix='/api/alphamind/chat')
+
+# Initialize service
+chat_service = ChatService()
 
 logger = logging.getLogger(__name__)
 
-@alphamind_chat_bp.route('/conversations', methods=['GET'])
-@login_required
-def get_conversations():
-    """获取用户的对话列表"""
-    try:
-        page = request.args.get('page', 1, type=int)
-        limit = request.args.get('limit', 20, type=int)
-        status = request.args.get('status', 'active')
 
-        conversations = ChatService.get_user_conversations(
-            user_id=current_user.id,
-            page=page,
-            limit=limit,
-            status=status
-        )
+class ChatController:
+    """Chat Controller Class"""
 
-        return jsonify({
-            'success': True,
-            'data': [conv.to_dict() for conv in conversations.items],
-            'pagination': {
-                'page': conversations.page,
-                'pages': conversations.pages,
-                'per_page': conversations.per_page,
-                'total': conversations.total
-            }
-        })
-    except Exception as e:
-        logger.exception("Failed to get conversations")
-        return jsonify({
-            'success': False,
-            'error': 'Failed to retrieve conversations'
-        }), 500
+    @staticmethod
+    @chat_bp.route('/conversations', methods=['GET'])
+    @cross_origin()
+    def get_conversations():
+        """Get all conversations for the current user"""
+        try:
+            user_id = request.args.get('user_id', 'default_user')
+            page = int(request.args.get('page', 1))
+            limit = int(request.args.get('limit', 20))
 
-@alphamind_chat_bp.route('/conversations', methods=['POST'])
-@login_required
-def create_conversation():
-    """创建新对话"""
-    try:
-        data = request.get_json()
+            conversations = chat_service.get_user_conversations(
+                user_id=user_id,
+                page=page,
+                limit=limit
+            )
 
-        if not data or not data.get('title'):
-            raise BadRequest('Title is required')
+            return jsonify({
+                'success': True,
+                'data': conversations,
+                'message': 'Conversations retrieved successfully'
+            }), 200
 
-        conversation = ChatService.create_conversation(
-            user_id=current_user.id,
-            title=data['title'],
-            agent_id=data.get('agent_id'),
-            metadata=data.get('metadata', {})
-        )
+        except Exception as e:
+            logger.exception("Error getting conversations")
+            return jsonify({
+                'success': False,
+                'error': str(e),
+                'message': 'Failed to retrieve conversations'
+            }), 500
 
-        return jsonify({
-            'success': True,
-            'data': conversation.to_dict()
-        }), 201
+    @staticmethod
+    @chat_bp.route('/conversations', methods=['POST'])
+    @cross_origin()
+    def create_conversation():
+        """Create a new conversation"""
+        try:
+            data = request.get_json()
 
-    except BadRequest as e:
-        return jsonify({
-            'success': False,
-            'error': str(e)
-        }), 400
-    except Exception as e:
-        logger.exception("Failed to create conversation")
-        return jsonify({
-            'success': False,
-            'error': 'Failed to create conversation'
-        }), 500
+            if not data:
+                return jsonify({
+                    'success': False,
+                    'message': 'Request body is required'
+                }), 400
 
-@alphamind_chat_bp.route('/conversations/<conversation_id>', methods=['GET'])
-@login_required
-def get_conversation(conversation_id):
-    """获取对话详情"""
-    try:
-        conversation = ChatService.get_conversation(
-            conversation_id=conversation_id,
-            user_id=current_user.id
-        )
+            user_id = data.get('user_id', 'default_user')
+            title = data.get('title', 'New Conversation')
+            agent_id = data.get('agent_id')
 
-        if not conversation:
-            raise NotFound('Conversation not found')
+            conversation = chat_service.create_conversation(
+                user_id=user_id,
+                title=title,
+                agent_id=agent_id
+            )
 
-        return jsonify({
-            'success': True,
-            'data': conversation.to_dict()
-        })
+            return jsonify({
+                'success': True,
+                'data': conversation,
+                'message': 'Conversation created successfully'
+            }), 201
 
-    except NotFound as e:
-        return jsonify({
-            'success': False,
-            'error': str(e)
-        }), 404
-    except Exception as e:
-        logger.exception("Failed to get conversation")
-        return jsonify({
-            'success': False,
-            'error': 'Failed to retrieve conversation'
-        }), 500
+        except Exception as e:
+            logger.exception("Error creating conversation")
+            return jsonify({
+                'success': False,
+                'error': str(e),
+                'message': 'Failed to create conversation'
+            }), 500
 
-@alphamind_chat_bp.route('/conversations/<conversation_id>', methods=['PUT'])
-@login_required
-def update_conversation(conversation_id):
-    """更新对话"""
-    try:
-        data = request.get_json()
+    @staticmethod
+    @chat_bp.route('/conversations/<conversation_id>', methods=['GET'])
+    @cross_origin()
+    def get_conversation(conversation_id):
+        """Get a specific conversation with messages"""
+        try:
+            conversation = chat_service.get_conversation_with_messages(conversation_id)
 
-        conversation = ChatService.update_conversation(
-            conversation_id=conversation_id,
-            user_id=current_user.id,
-            updates=data
-        )
+            if not conversation:
+                return jsonify({
+                    'success': False,
+                    'message': 'Conversation not found'
+                }), 404
 
-        if not conversation:
-            raise NotFound('Conversation not found')
+            return jsonify({
+                'success': True,
+                'data': conversation,
+                'message': 'Conversation retrieved successfully'
+            }), 200
 
-        return jsonify({
-            'success': True,
-            'data': conversation.to_dict()
-        })
+        except Exception as e:
+            logger.exception("Error getting conversation")
+            return jsonify({
+                'success': False,
+                'error': str(e),
+                'message': 'Failed to retrieve conversation'
+            }), 500
 
-    except NotFound as e:
-        return jsonify({
-            'success': False,
-            'error': str(e)
-        }), 404
-    except Exception as e:
-        logger.exception("Failed to update conversation")
-        return jsonify({
-            'success': False,
-            'error': 'Failed to update conversation'
-        }), 500
+    @staticmethod
+    @chat_bp.route('/conversations/<conversation_id>/messages', methods=['POST'])
+    @cross_origin()
+    def send_message(conversation_id):
+        """Send a message in a conversation"""
+        try:
+            data = request.get_json()
 
-@alphamind_chat_bp.route('/conversations/<conversation_id>', methods=['DELETE'])
-@login_required
-def delete_conversation(conversation_id):
-    """删除对话"""
-    try:
-        success = ChatService.delete_conversation(
-            conversation_id=conversation_id,
-            user_id=current_user.id
-        )
+            if not data or not data.get('content'):
+                return jsonify({
+                    'success': False,
+                    'message': 'Message content is required'
+                }), 400
 
-        if not success:
-            raise NotFound('Conversation not found')
+            user_id = data.get('user_id', 'default_user')
+            content = data.get('content')
+            message_type = data.get('type', 'text')
 
-        return jsonify({
-            'success': True,
-            'message': 'Conversation deleted successfully'
-        })
+            # Send user message
+            user_message = chat_service.send_message(
+                conversation_id=conversation_id,
+                user_id=user_id,
+                content=content,
+                sender='user',
+                message_type=message_type
+            )
 
-    except NotFound as e:
-        return jsonify({
-            'success': False,
-            'error': str(e)
-        }), 404
-    except Exception as e:
-        logger.exception("Failed to delete conversation")
-        return jsonify({
-            'success': False,
-            'error': 'Failed to delete conversation'
-        }), 500
+            # Generate AI response
+            ai_response = chat_service.generate_ai_response(
+                conversation_id=conversation_id,
+                user_message=content
+            )
 
-@alphamind_chat_bp.route('/conversations/<conversation_id>/messages', methods=['GET'])
-@login_required
-def get_messages(conversation_id):
-    """获取对话消息"""
-    try:
-        page = request.args.get('page', 1, type=int)
-        limit = request.args.get('limit', 50, type=int)
+            # Send AI message
+            ai_message = chat_service.send_message(
+                conversation_id=conversation_id,
+                user_id=user_id,
+                content=ai_response,
+                sender='assistant',
+                message_type='text'
+            )
 
-        # 验证对话所有权
-        conversation = ChatService.get_conversation(conversation_id, current_user.id)
-        if not conversation:
-            raise NotFound('Conversation not found')
+            return jsonify({
+                'success': True,
+                'data': {
+                    'user_message': user_message,
+                    'ai_message': ai_message
+                },
+                'message': 'Message sent successfully'
+            }), 201
 
-        messages = ChatService.get_messages(
-            conversation_id=conversation_id,
-            page=page,
-            limit=limit
-        )
+        except Exception as e:
+            logger.exception("Error sending message")
+            return jsonify({
+                'success': False,
+                'error': str(e),
+                'message': 'Failed to send message'
+            }), 500
 
-        return jsonify({
-            'success': True,
-            'data': [msg.to_dict() for msg in messages.items],
-            'pagination': {
-                'page': messages.page,
-                'pages': messages.pages,
-                'per_page': messages.per_page,
-                'total': messages.total
-            }
-        })
+    @staticmethod
+    @chat_bp.route('/conversations/<conversation_id>', methods=['DELETE'])
+    @cross_origin()
+    def delete_conversation(conversation_id):
+        """Delete a conversation"""
+        try:
+            success = chat_service.delete_conversation(conversation_id)
 
-    except NotFound as e:
-        return jsonify({
-            'success': False,
-            'error': str(e)
-        }), 404
-    except Exception as e:
-        logger.exception("Failed to get messages")
-        return jsonify({
-            'success': False,
-            'error': 'Failed to retrieve messages'
-        }), 500
+            if not success:
+                return jsonify({
+                    'success': False,
+                    'message': 'Conversation not found'
+                }), 404
 
-@alphamind_chat_bp.route('/conversations/<conversation_id>/messages', methods=['POST'])
-@login_required
-def send_message(conversation_id):
-    """发送消息"""
-    try:
-        data = request.get_json()
+            return jsonify({
+                'success': True,
+                'message': 'Conversation deleted successfully'
+            }), 200
 
-        if not data or not data.get('content'):
-            raise BadRequest('Message content is required')
+        except Exception as e:
+            logger.exception("Error deleting conversation")
+            return jsonify({
+                'success': False,
+                'error': str(e),
+                'message': 'Failed to delete conversation'
+            }), 500
 
-        # 验证对话所有权
-        conversation = ChatService.get_conversation(conversation_id, current_user.id)
-        if not conversation:
-            raise NotFound('Conversation not found')
+    @staticmethod
+    @chat_bp.route('/conversations/<conversation_id>/title', methods=['PUT'])
+    @cross_origin()
+    def update_conversation_title(conversation_id):
+        """Update conversation title"""
+        try:
+            data = request.get_json()
 
-        # 处理用户消息
-        user_message = ChatService.create_message(
-            conversation_id=conversation_id,
-            role='user',
-            content=data['content'],
-            message_type=data.get('type', 'text'),
-            attachments=data.get('attachments', []),
-            metadata=data.get('metadata', {})
-        )
+            if not data or not data.get('title'):
+                return jsonify({
+                    'success': False,
+                    'message': 'Title is required'
+                }), 400
 
-        # 生成AI回复
-        ai_response = ChatService.generate_ai_response(
-            conversation=conversation,
-            user_message=user_message
-        )
+            title = data.get('title')
 
-        return jsonify({
-            'success': True,
-            'data': {
-                'user_message': user_message.to_dict(),
-                'ai_response': ai_response.to_dict() if ai_response else None
-            }
-        }), 201
+            success = chat_service.update_conversation_title(conversation_id, title)
 
-    except (BadRequest, NotFound) as e:
-        return jsonify({
-            'success': False,
-            'error': str(e)
-        }), e.code
-    except Exception as e:
-        logger.exception("Failed to send message")
-        return jsonify({
-            'success': False,
-            'error': 'Failed to send message'
-        }), 500
+            if not success:
+                return jsonify({
+                    'success': False,
+                    'message': 'Conversation not found'
+                }), 404
 
-@alphamind_chat_bp.route('/conversations/<conversation_id>/messages/stream', methods=['POST'])
-@login_required
-def stream_message(conversation_id):
-    """流式发送消息（Server-Sent Events）"""
-    try:
-        data = request.get_json()
+            return jsonify({
+                'success': True,
+                'message': 'Conversation title updated successfully'
+            }), 200
 
-        if not data or not data.get('content'):
-            raise BadRequest('Message content is required')
+        except Exception as e:
+            logger.exception("Error updating conversation title")
+            return jsonify({
+                'success': False,
+                'error': str(e),
+                'message': 'Failed to update conversation title'
+            }), 500
 
-        # 验证对话所有权
-        conversation = ChatService.get_conversation(conversation_id, current_user.id)
-        if not conversation:
-            raise NotFound('Conversation not found')
 
-        def generate_response():
-            try:
-                # 创建用户消息
-                user_message = ChatService.create_message(
-                    conversation_id=conversation_id,
-                    role='user',
-                    content=data['content'],
-                    message_type=data.get('type', 'text'),
-                    attachments=data.get('attachments', [])
-                )
-
-                yield (
-                    "data: "
-                    + jsonify({'type': 'user_message', 'data': user_message.to_dict()})
-                        .get_data(as_text=True)
-                    + "\n\n"
-                )
-
-                # 流式生成AI回复
-                for chunk in ChatService.stream_ai_response(conversation, user_message):
-                    yield f"data: {jsonify(chunk).get_data(as_text=True)}\n\n"
-
-                yield "data: [DONE]\n\n"
-
-            except Exception as e:
-                logger.exception("Stream error")
-                yield "data: {'type': 'error', 'error': str(e)}\n\n"
-
-        return current_app.response_class(
-            generate_response(),
-            mimetype='text/event-stream',
-            headers={
-                'Cache-Control': 'no-cache',
-                'Connection': 'keep-alive',
-                'Access-Control-Allow-Origin': '*'
-            }
-        )
-
-    except (BadRequest, NotFound) as e:
-        return jsonify({
-            'success': False,
-            'error': str(e)
-        }), e.code
-    except Exception as e:
-        logger.exception("Failed to stream message")
-        return jsonify({
-            'success': False,
-            'error': 'Failed to stream message'
-        }), 500
-
-@alphamind_chat_bp.route('/system/health', methods=['GET'])
-def get_system_health():
-    """获取系统健康状态"""
-    try:
-        health_status = ChatService.get_system_health()
-        return jsonify({
-            'success': True,
-            'data': health_status
-        })
-    except Exception as e:
-        logger.exception("Failed to get system health")
-        return jsonify({
-            'success': False,
-            'error': 'Failed to get system health',
-            'data': {
-                'api': 'down',
-                'database': 'unknown',
-                'ai_services': 'unknown',
-                'last_check': None
-            }
-        }), 500
-
-# 错误处理
-@alphamind_chat_bp.errorhandler(BaseHTTPException)
-def handle_http_exception(e):
+# Register error handlers
+@chat_bp.errorhandler(400)
+def bad_request(error):
     return jsonify({
         'success': False,
-        'error': e.description,
-        'code': e.code
-    }), e.code
+        'message': 'Bad request',
+        'error': str(error)
+    }), 400
 
-@alphamind_chat_bp.errorhandler(Exception)
-def handle_general_exception(e):
-    logger.exception("Unhandled exception")
+
+@chat_bp.errorhandler(404)
+def not_found(error):
     return jsonify({
         'success': False,
-        'error': 'Internal server error'
+        'message': 'Resource not found',
+        'error': str(error)
+    }), 404
+
+
+@chat_bp.errorhandler(500)
+def internal_error(error):
+    return jsonify({
+        'success': False,
+        'message': 'Internal server error',
+        'error': str(error)
     }), 500
 

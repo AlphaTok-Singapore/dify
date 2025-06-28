@@ -1,51 +1,62 @@
 """
-数据集管理数据模型
+Dataset Model for AlphaMind
 """
 
+import uuid
 from datetime import datetime
 
-from flask_sqlalchemy import SQLAlchemy
 
-db = SQLAlchemy()
-
-class Dataset(db.Model):
-    """数据集模型"""
-    __tablename__ = 'alphamind_datasets'
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(255), nullable=False, unique=True)
-    description = db.Column(db.Text)
-    dataset_type = db.Column(db.String(100), nullable=False)  # text, image, audio, video, structured
-    source_info = db.Column(db.JSON)
-    processing_status = db.Column(
-        db.String(50),
-        nullable=False,
-        default='pending'  # pending, processing, completed, failed
-    )
-    metadata = db.Column(db.JSON)
-    file_count = db.Column(db.Integer, default=0)
-    total_size = db.Column(db.BigInteger, default=0)  # 总大小（字节）
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    created_by = db.Column(db.String(255))
-
-    def to_dict(self):
-        """转换为字典格式"""
+class Dataset:
+    def __init__(
+        self,
+        id: str | None = None,
+        user_id: str | None = None,
+        name: str = "",
+        description: str = "",
+        data_type: str = "text",
+        status: str = "draft",
+        config: dict | None = None,
+        created_at: datetime | None = None,
+        updated_at: datetime | None = None,
+        metadata: dict | None = None
+    ):
+        self.id = id or str(uuid.uuid4())
+        self.user_id = user_id
+        self.name = name
+        self.description = description
+        self.data_type = data_type
+        self.status = status
+        self.config = config or {}
+        self.created_at = created_at or datetime.utcnow()
+        self.updated_at = updated_at or datetime.utcnow()
+        self.metadata = metadata or {}
+        
+    def to_dict(self) -> dict:
         return {
             'id': self.id,
+            'user_id': self.user_id,
             'name': self.name,
             'description': self.description,
-            'dataset_type': self.dataset_type,
-            'source_info': self.source_info,
-            'processing_status': self.processing_status,
-            'metadata': self.metadata,
-            'file_count': self.file_count,
-            'total_size': self.total_size,
+            'data_type': self.data_type,
+            'status': self.status,
+            'config': self.config,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
-            'created_by': self.created_by
+            'metadata': self.metadata
         }
-
-    def __repr__(self):
-        return f'<Dataset {self.name}>'
+    
+    @classmethod
+    def from_dict(cls, data: dict) -> 'Dataset':
+        return cls(
+            id=data.get('id'),
+            user_id=data.get('user_id'),
+            name=data.get('name', ''),
+            description=data.get('description', ''),
+            data_type=data.get('data_type', 'text'),
+            status=data.get('status', 'draft'),
+            config=data.get('config', {}),
+            created_at=datetime.fromisoformat(data['created_at']) if data.get('created_at') else None,
+            updated_at=datetime.fromisoformat(data['updated_at']) if data.get('updated_at') else None,
+            metadata=data.get('metadata', {})
+        )
 
