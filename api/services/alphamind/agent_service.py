@@ -48,7 +48,7 @@ class AgentService:
             return [agent.to_dict() for agent in paginated]
 
         except Exception as e:
-            logger.exception(f"Error getting user agents: {str(e)}")
+            logger.exception("Error getting user agents: ")
             raise
 
     def create_agent(self, user_id: str, name: str, description: str, agent_type: str,
@@ -71,7 +71,7 @@ class AgentService:
             return agent.to_dict()
 
         except Exception as e:
-            logger.exception(f"Error creating agent: {str(e)}")
+            logger.exception("Error creating agent: ")
             raise
 
     def get_agent_details(self, agent_id: str) -> Optional[dict]:
@@ -84,7 +84,7 @@ class AgentService:
             return agent.to_dict()
 
         except Exception as e:
-            logger.exception(f"Error getting agent details: {str(e)}")
+            logger.exception("Error getting agent details: ")
             raise
 
     def update_agent(self, agent_id: str, updates: dict) -> Optional[dict]:
@@ -111,7 +111,7 @@ class AgentService:
             return agent.to_dict()
 
         except Exception as e:
-            logger.exception(f"Error updating agent: {str(e)}")
+            logger.exception("Error updating agent: ")
             raise
 
     def delete_agent(self, agent_id: str) -> bool:
@@ -123,7 +123,7 @@ class AgentService:
             return False
 
         except Exception as e:
-            logger.exception(f"Error deleting agent: {str(e)}")
+            logger.exception("Error deleting agent: ")
             raise
 
     def activate_agent(self, agent_id: str) -> bool:
@@ -137,7 +137,7 @@ class AgentService:
             return True
 
         except Exception as e:
-            logger.exception(f"Error activating agent: {str(e)}")
+            logger.exception("Error activating agent: ")
             raise
 
     def deactivate_agent(self, agent_id: str) -> bool:
@@ -151,7 +151,7 @@ class AgentService:
             return True
 
         except Exception as e:
-            logger.exception(f"Error deactivating agent: {str(e)}")
+            logger.exception("Error deactivating agent: ")
             raise
 
     def start_training(self, agent_id: str, training_data: list | None = None) -> bool:
@@ -167,7 +167,7 @@ class AgentService:
             return True
 
         except Exception as e:
-            logger.exception(f"Error starting agent training: {str(e)}")
+            logger.exception("Error starting agent training: ")
             raise
 
     def get_agent_analytics(self, agent_id: str, days: int = 30) -> Optional[dict]:
@@ -190,7 +190,7 @@ class AgentService:
             }
 
         except Exception as e:
-            logger.exception(f"Error getting agent analytics: {str(e)}")
+            logger.exception("Error getting agent analytics: ")
             raise
 
     def get_agent_skills(self, agent_id: str) -> list[str]:
@@ -203,7 +203,7 @@ class AgentService:
             return agent.skills
 
         except Exception as e:
-            logger.exception(f"Error getting agent skills: {str(e)}")
+            logger.exception("Error getting agent skills: ")
             raise
 
     def add_skill_to_agent(self, agent_id: str, skill_id: str) -> bool:
@@ -217,6 +217,6 @@ class AgentService:
             return True
 
         except Exception as e:
-            logger.exception(f"Error adding skill to agent: {str(e)}")
+            logger.exception("Error adding skill to agent: ")
             raise
 

@@ -38,7 +38,7 @@ class AIEngine:
                 return f"I understand you said: '{user_message}'. How can I assist you further?"
                 
         except Exception as e:
-            logger.exception(f"Error generating AI response: {str(e)}")
+            logger.exception("Error generating AI response: ")
             return "I apologize, but I'm having trouble processing your request right now."
     
     def load_agent_model(self, agent_id: str) -> bool:
@@ -48,7 +48,7 @@ class AIEngine:
             self.models[agent_id] = {'loaded': True, 'type': 'general'}
             return True
         except Exception as e:
-            logger.exception(f"Error loading agent model: {str(e)}")
+            logger.exception("Error loading agent model: ")
             return False
     
     def process_context(self, conversation_history: list) -> dict:
@@ -67,6 +67,6 @@ class AIEngine:
             
             return context
         except Exception as e:
-            logger.exception(f"Error processing context: {str(e)}")
+            logger.exception("Error processing context: ")
             return {}
 

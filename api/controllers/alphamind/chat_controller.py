@@ -50,7 +50,7 @@ class ChatController:
             }), 200
 
         except Exception as e:
-            logger.exception(f"Error getting conversations: {str(e)}")
+            logger.exception("Error getting conversations: ")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -88,7 +88,7 @@ class ChatController:
             }), 201
 
         except Exception as e:
-            logger.exception(f"Error creating conversation: {str(e)}")
+            logger.exception("Error creating conversation: ")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -116,7 +116,7 @@ class ChatController:
             }), 200
 
         except Exception as e:
-            logger.exception(f"Error getting conversation: {str(e)}")
+            logger.exception("Error getting conversation: ")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -175,7 +175,7 @@ class ChatController:
             }), 201
 
         except Exception as e:
-            logger.exception(f"Error sending message: {str(e)}")
+            logger.exception("Error sending message: ")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -202,7 +202,7 @@ class ChatController:
             }), 200
 
         except Exception as e:
-            logger.exception(f"Error deleting conversation: {str(e)}")
+            logger.exception("Error deleting conversation: ")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -239,7 +239,7 @@ class ChatController:
             }), 200
 
         except Exception as e:
-            logger.exception(f"Error updating conversation title: {str(e)}")
+            logger.exception("Error updating conversation title: ")
             return jsonify({
                 'success': False,
                 'error': str(e),

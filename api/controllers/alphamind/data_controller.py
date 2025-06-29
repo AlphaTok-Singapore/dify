@@ -53,7 +53,7 @@ class DataController:
             }), 200
 
         except Exception as e:
-            logger.exception(f"Error getting datasets: {str(e)}")
+            logger.exception("Error getting datasets: ")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -97,7 +97,7 @@ class DataController:
             }), 201
 
         except Exception as e:
-            logger.exception(f"Error creating dataset: {str(e)}")
+            logger.exception("Error creating dataset: ")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -125,7 +125,7 @@ class DataController:
             }), 200
 
         except Exception as e:
-            logger.exception(f"Error getting dataset: {str(e)}")
+            logger.exception("Error getting dataset: ")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -162,7 +162,7 @@ class DataController:
             }), 200
 
         except Exception as e:
-            logger.exception(f"Error uploading data: {str(e)}")
+            logger.exception("Error uploading data: ")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -187,7 +187,7 @@ class DataController:
             }), 200
 
         except Exception as e:
-            logger.exception(f"Error processing dataset: {str(e)}")
+            logger.exception("Error processing dataset: ")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -218,7 +218,7 @@ class DataController:
             }), 200
 
         except Exception as e:
-            logger.exception(f"Error getting knowledge bases: {str(e)}")
+            logger.exception("Error getting knowledge bases: ")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -261,7 +261,7 @@ class DataController:
             }), 201
 
         except Exception as e:
-            logger.exception(f"Error creating knowledge base: {str(e)}")
+            logger.exception("Error creating knowledge base: ")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -289,7 +289,7 @@ class DataController:
             }), 200
 
         except Exception as e:
-            logger.exception(f"Error getting knowledge base: {str(e)}")
+            logger.exception("Error getting knowledge base: ")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -324,7 +324,7 @@ class DataController:
             }), 201
 
         except Exception as e:
-            logger.exception(f"Error adding document to knowledge base: {str(e)}")
+            logger.exception("Error adding document to knowledge base: ")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -359,7 +359,7 @@ class DataController:
             }), 200
 
         except Exception as e:
-            logger.exception(f"Error searching knowledge base: {str(e)}")
+            logger.exception("Error searching knowledge base: ")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -384,7 +384,7 @@ class DataController:
             }), 200
 
         except Exception as e:
-            logger.exception(f"Error getting data overview: {str(e)}")
+            logger.exception("Error getting data overview: ")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -409,7 +409,7 @@ class DataController:
             }), 200
 
         except Exception as e:
-            logger.exception(f"Error getting usage analytics: {str(e)}")
+            logger.exception("Error getting usage analytics: ")
             return jsonify({
                 'success': False,
                 'error': str(e),

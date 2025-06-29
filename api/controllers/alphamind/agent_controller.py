@@ -56,7 +56,7 @@ class AgentController:
             }), 200
 
         except Exception as e:
-            logger.exception(f"Error getting agents: {str(e)}")
+            logger.exception("Error getting agents: ")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -102,7 +102,7 @@ class AgentController:
             }), 201
 
         except Exception as e:
-            logger.exception(f"Error creating agent: {str(e)}")
+            logger.exception("Error creating agent: ")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -130,7 +130,7 @@ class AgentController:
             }), 200
 
         except Exception as e:
-            logger.exception(f"Error getting agent: {str(e)}")
+            logger.exception("Error getting agent: ")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -166,7 +166,7 @@ class AgentController:
             }), 200
 
         except Exception as e:
-            logger.exception(f"Error updating agent: {str(e)}")
+            logger.exception("Error updating agent: ")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -193,7 +193,7 @@ class AgentController:
             }), 200
 
         except Exception as e:
-            logger.exception(f"Error deleting agent: {str(e)}")
+            logger.exception("Error deleting agent: ")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -220,7 +220,7 @@ class AgentController:
             }), 200
 
         except Exception as e:
-            logger.exception(f"Error activating agent: {str(e)}")
+            logger.exception("Error activating agent: ")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -247,7 +247,7 @@ class AgentController:
             }), 200
 
         except Exception as e:
-            logger.exception(f"Error deactivating agent: {str(e)}")
+            logger.exception("Error deactivating agent: ")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -277,7 +277,7 @@ class AgentController:
             }), 200
 
         except Exception as e:
-            logger.exception(f"Error training agent: {str(e)}")
+            logger.exception("Error training agent: ")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -307,7 +307,7 @@ class AgentController:
             }), 200
 
         except Exception as e:
-            logger.exception(f"Error getting agent analytics: {str(e)}")
+            logger.exception("Error getting agent analytics: ")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -329,7 +329,7 @@ class AgentController:
             }), 200
 
         except Exception as e:
-            logger.exception(f"Error getting agent skills: {str(e)}")
+            logger.exception("Error getting agent skills: ")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -364,7 +364,7 @@ class AgentController:
             }), 200
 
         except Exception as e:
-            logger.exception(f"Error adding skill to agent: {str(e)}")
+            logger.exception("Error adding skill to agent: ")
             return jsonify({
                 'success': False,
                 'error': str(e),
