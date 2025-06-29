@@ -2,7 +2,7 @@
 
 import React from 'react'
 import Link from 'next/link'
-import { Bot, Database, MessageSquare } from 'lucide-react'
+import { Plus, MessageSquare, Bot, Database } from 'lucide-react'
 
 export default function QuickActions() {
   const actions = [
@@ -11,35 +11,35 @@ export default function QuickActions() {
       description: 'Begin a conversation with an AI agent',
       href: '/alphamind/chat',
       icon: MessageSquare,
-      color: 'bg-blue-500',
+      color: 'bg-blue-500'
     },
     {
       name: 'Create Agent',
       description: 'Set up a new AI assistant',
       href: '/alphamind/agents',
       icon: Bot,
-      color: 'bg-green-500',
+      color: 'bg-green-500'
     },
     {
       name: 'Upload Data',
       description: 'Add new training data or documents',
       href: '/alphamind/data',
       icon: Database,
-      color: 'bg-purple-500',
-    },
+      color: 'bg-purple-500'
+    }
   ]
 
   return (
-    <div className="rounded-lg border bg-white p-6 shadow-sm">
-      <h3 className="mb-4 text-lg font-semibold text-gray-900">Quick Actions</h3>
+    <div className="bg-white p-6 rounded-lg shadow-sm border">
+      <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
       <div className="space-y-3">
-        {actions.map(action => (
+        {actions.map((action) => (
           <Link
             key={action.name}
             href={action.href}
-            className="flex items-center rounded-lg p-3 transition-colors hover:bg-gray-50"
+            className="flex items-center p-3 rounded-lg hover:bg-gray-50 transition-colors"
           >
-            <div className={`rounded-lg p-2 ${action.color} mr-3`}>
+            <div className={`p-2 rounded-lg ${action.color} mr-3`}>
               <action.icon className="h-5 w-5 text-white" />
             </div>
             <div>
@@ -52,3 +52,4 @@ export default function QuickActions() {
     </div>
   )
 }
+

@@ -7,6 +7,11 @@ def init_app(app: DifyApp):
 
     from flask_cors import CORS  # type: ignore
 
+    from controllers.alphamind.account_controller import account_bp
+    from controllers.alphamind.api_compat_controller import api_bp as api_compat_bp
+    from controllers.alphamind.auth_settings_controller import auth_bp as alphamind_auth_bp
+    from controllers.alphamind.features_controller import console_features_bp, features_bp
+    from controllers.alphamind.settings_compat_controller import settings_compat_bp
     from controllers.console import bp as console_app_bp
     from controllers.files import bp as files_bp
     from controllers.inner_api import bp as inner_api_bp
@@ -46,3 +51,14 @@ def init_app(app: DifyApp):
     app.register_blueprint(files_bp)
 
     app.register_blueprint(inner_api_bp)
+
+    app.register_blueprint(alphamind_auth_bp)
+
+    app.register_blueprint(features_bp)
+    app.register_blueprint(console_features_bp)
+
+    app.register_blueprint(account_bp)
+
+    app.register_blueprint(api_compat_bp)
+
+    app.register_blueprint(settings_compat_bp)

@@ -13,7 +13,7 @@ import logging
 from flask import Blueprint, jsonify, request
 from flask_cors import cross_origin
 
-from ...services.alphamind.chat_service import ChatService
+from services.alphamind.chat_service import ChatService
 
 # Create blueprint
 chat_bp = Blueprint('alphamind_chat', __name__, url_prefix='/api/alphamind/chat')
@@ -50,7 +50,7 @@ class ChatController:
             }), 200
 
         except Exception as e:
-            logger.exception("Error getting conversations")
+            logger.exception(f"Error getting conversations: {str(e)}")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -88,7 +88,7 @@ class ChatController:
             }), 201
 
         except Exception as e:
-            logger.exception("Error creating conversation")
+            logger.exception(f"Error creating conversation: {str(e)}")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -116,7 +116,7 @@ class ChatController:
             }), 200
 
         except Exception as e:
-            logger.exception("Error getting conversation")
+            logger.exception(f"Error getting conversation: {str(e)}")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -175,7 +175,7 @@ class ChatController:
             }), 201
 
         except Exception as e:
-            logger.exception("Error sending message")
+            logger.exception(f"Error sending message: {str(e)}")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -202,7 +202,7 @@ class ChatController:
             }), 200
 
         except Exception as e:
-            logger.exception("Error deleting conversation")
+            logger.exception(f"Error deleting conversation: {str(e)}")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -239,7 +239,7 @@ class ChatController:
             }), 200
 
         except Exception as e:
-            logger.exception("Error updating conversation title")
+            logger.exception(f"Error updating conversation title: {str(e)}")
             return jsonify({
                 'success': False,
                 'error': str(e),

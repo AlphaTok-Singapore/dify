@@ -13,7 +13,7 @@ import logging
 from flask import Blueprint, jsonify, request
 from flask_cors import cross_origin
 
-from ...services.alphamind.integration_service import IntegrationService
+from services.alphamind.integration_service import IntegrationService
 
 # Create blueprint
 settings_bp = Blueprint('alphamind_settings', __name__, url_prefix='/api/alphamind/settings')
@@ -45,7 +45,7 @@ class SettingsController:
             }), 200
 
         except Exception as e:
-            logger.exception("Error getting general settings")
+            logger.exception(f"Error getting general settings: {str(e)}")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -76,7 +76,7 @@ class SettingsController:
             }), 200
 
         except Exception as e:
-            logger.exception("Error updating general settings")
+            logger.exception(f"Error updating general settings: {str(e)}")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -101,7 +101,7 @@ class SettingsController:
             }), 200
 
         except Exception as e:
-            logger.exception("Error getting integrations")
+            logger.exception(f"Error getting integrations: {str(e)}")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -125,7 +125,7 @@ class SettingsController:
             }), 200
 
         except Exception as e:
-            logger.exception("Error getting integration config")
+            logger.exception(f"Error getting integration config: {str(e)}")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -158,7 +158,7 @@ class SettingsController:
             }), 200
 
         except Exception as e:
-            logger.exception("Error updating integration config")
+            logger.exception(f"Error updating integration config: {str(e)}")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -188,7 +188,7 @@ class SettingsController:
             }), 200
 
         except Exception as e:
-            logger.exception("Error enabling integration")
+            logger.exception(f"Error enabling integration: {str(e)}")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -218,7 +218,7 @@ class SettingsController:
             }), 200
 
         except Exception as e:
-            logger.exception("Error disabling integration")
+            logger.exception(f"Error disabling integration: {str(e)}")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -243,7 +243,7 @@ class SettingsController:
             }), 200
 
         except Exception as e:
-            logger.exception("Error testing integration")
+            logger.exception(f"Error testing integration: {str(e)}")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -268,7 +268,7 @@ class SettingsController:
             }), 200
 
         except Exception as e:
-            logger.exception("Error getting social media settings")
+            logger.exception(f"Error getting social media settings: {str(e)}")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -299,7 +299,7 @@ class SettingsController:
             }), 200
 
         except Exception as e:
-            logger.exception("Error updating social media settings")
+            logger.exception(f"Error updating social media settings: {str(e)}")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -323,7 +323,7 @@ class SettingsController:
             }), 200
 
         except Exception as e:
-            logger.exception("Error getting social accounts")
+            logger.exception(f"Error getting social accounts: {str(e)}")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -358,7 +358,7 @@ class SettingsController:
             }), 200
 
         except Exception as e:
-            logger.exception("Error connecting social account")
+            logger.exception(f"Error connecting social account: {str(e)}")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -388,7 +388,7 @@ class SettingsController:
             }), 200
 
         except Exception as e:
-            logger.exception("Error disconnecting social account")
+            logger.exception(f"Error disconnecting social account: {str(e)}")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -413,7 +413,7 @@ class SettingsController:
             }), 200
 
         except Exception as e:
-            logger.exception("Error getting API keys")
+            logger.exception(f"Error getting API keys: {str(e)}")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -447,7 +447,7 @@ class SettingsController:
             }), 201
 
         except Exception as e:
-            logger.exception("Error creating API key")
+            logger.exception(f"Error creating API key: {str(e)}")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -474,7 +474,7 @@ class SettingsController:
             }), 200
 
         except Exception as e:
-            logger.exception("Error deleting API key")
+            logger.exception(f"Error deleting API key: {str(e)}")
             return jsonify({
                 'success': False,
                 'error': str(e),

@@ -3,7 +3,7 @@
 import React from 'react'
 import { AlphaMindProvider } from '@/context/alphamind/AlphaMindContext'
 
-type AlphaMindLayoutProps = {
+interface AlphaMindLayoutProps {
   children: React.ReactNode
 }
 
@@ -18,3 +18,4 @@ export default function AlphaMindLayout({ children }: AlphaMindLayoutProps) {
     </AlphaMindProvider>
   )
 }
+

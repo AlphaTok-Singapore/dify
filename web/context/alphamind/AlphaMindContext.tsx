@@ -1,10 +1,9 @@
 'use client'
 
-import type { ReactNode } from 'react'
-import React, { createContext, useContext, useReducer } from 'react'
+import React, { createContext, useContext, useReducer, ReactNode } from 'react'
 
 // Types
-type AlphaMindState = {
+interface AlphaMindState {
   user: any
   agents: any[]
   conversations: any[]
@@ -13,7 +12,7 @@ type AlphaMindState = {
   error: string | null
 }
 
-type AlphaMindAction =
+type AlphaMindAction = 
   | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'SET_ERROR'; payload: string | null }
   | { type: 'SET_USER'; payload: any }
@@ -29,7 +28,7 @@ const initialState: AlphaMindState = {
   conversations: [],
   currentConversation: null,
   isLoading: false,
-  error: null,
+  error: null
 }
 
 // Reducer
@@ -53,8 +52,8 @@ function alphaMindReducer(state: AlphaMindState, action: AlphaMindAction): Alpha
           ...state,
           currentConversation: {
             ...state.currentConversation,
-            messages: [...(state.currentConversation.messages || []), action.payload],
-          },
+            messages: [...(state.currentConversation.messages || []), action.payload]
+          }
         }
       }
       return state
@@ -83,8 +82,9 @@ export function AlphaMindProvider({ children }: { children: ReactNode }) {
 // Hook
 export function useAlphaMind() {
   const context = useContext(AlphaMindContext)
-  if (!context)
+  if (!context) {
     throw new Error('useAlphaMind must be used within an AlphaMindProvider')
-
+  }
   return context
 }
+

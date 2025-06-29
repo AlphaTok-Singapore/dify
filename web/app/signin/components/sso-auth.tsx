@@ -19,7 +19,7 @@ const SSOAuth: FC<SSOAuthProps> = ({
   const router = useRouter()
   const { t } = useTranslation()
   const searchParams = useSearchParams()
-  const invite_token = decodeURIComponent(searchParams.get('invite_token') || '')
+  const invite_token = decodeURIComponent(searchParams.get('invite_token') ?? '')
 
   const [isLoading, setIsLoading] = useState(false)
 

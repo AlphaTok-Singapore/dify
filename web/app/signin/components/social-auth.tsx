@@ -7,7 +7,7 @@ import classNames from '@/utils/classnames'
 import { getPurifyHref } from '@/utils'
 
 type SocialAuthProps = {
-  disabled?: boolean
+  readonly disabled?: boolean
 }
 
 export default function SocialAuth(props: SocialAuthProps) {

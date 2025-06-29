@@ -68,6 +68,9 @@ services:
       WEAVIATE_ENDPOINT: http://weaviate:8080
       WEAVIATE_API_KEY: WVF5YThaHlkYwhGUSmCRgsX3tD5ngdN8pkih
       OPENDAL_FS_ROOT: /app/storage
+      EMAIL_ENABLE: true
+      ENABLE_EMAIL_PASSWORD_LOGIN: 'true'
+      ENABLE_EMAIL_CODE_LOGIN: 'true'
     depends_on:
       - db
       - redis
@@ -93,6 +96,7 @@ services:
       WEAVIATE_ENDPOINT: http://weaviate:8080
       WEAVIATE_API_KEY: WVF5YThaHlkYwhGUSmCRgsX3tD5ngdN8pkih
       OPENDAL_FS_ROOT: /app/storage
+      EMAIL_ENABLE: true
     depends_on:
       - db
       - redis

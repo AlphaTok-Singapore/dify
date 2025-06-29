@@ -10,9 +10,9 @@ Business logic for chat functionality including:
 import logging
 from typing import Optional
 
-from ...core.alphamind.ai_engine import AIEngine
-from ...models.alphamind.conversation import Conversation
-from ...models.alphamind.message import Message
+from core.alphamind.ai_engine import AIEngine
+from models.alphamind.conversation import Conversation
+from models.alphamind.message import Message
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +44,7 @@ class ChatService:
             return [conv.to_dict() for conv in paginated]
 
         except Exception as e:
-            logger.exception("Error getting user conversations")
+            logger.exception(f"Error getting user conversations: {str(e)}")
             raise
 
     def create_conversation(self, user_id: str, title: str | None = None, agent_id: str | None = None) -> dict:
@@ -61,7 +61,7 @@ class ChatService:
             return conversation.to_dict()
 
         except Exception as e:
-            logger.exception("Error creating conversation")
+            logger.exception(f"Error creating conversation: {str(e)}")
             raise
 
     def get_conversation_with_messages(self, conversation_id: str) -> Optional[dict]:
@@ -87,7 +87,7 @@ class ChatService:
             return result
 
         except Exception as e:
-            logger.exception("Error getting conversation with messages")
+            logger.exception(f"Error getting conversation with messages: {str(e)}")
             raise
 
     def send_message(self, conversation_id: str, user_id: str, content: str,
@@ -111,7 +111,7 @@ class ChatService:
             return message.to_dict()
 
         except Exception as e:
-            logger.exception("Error sending message")
+            logger.exception(f"Error sending message: {str(e)}")
             raise
 
     def generate_ai_response(self, conversation_id: str, user_message: str) -> str:
@@ -140,7 +140,7 @@ class ChatService:
             return response
 
         except Exception as e:
-            logger.exception("Error generating AI response")
+            logger.exception(f"Error generating AI response: {str(e)}")
             return "I apologize, but I'm having trouble generating a response right now. Please try again."
 
     def delete_conversation(self, conversation_id: str) -> bool:
@@ -154,7 +154,7 @@ class ChatService:
             return True
 
         except Exception as e:
-            logger.exception("Error deleting conversation")
+            logger.exception(f"Error deleting conversation: {str(e)}")
             raise
 
     def update_conversation_title(self, conversation_id: str, title: str) -> bool:
@@ -168,6 +168,6 @@ class ChatService:
             return True
 
         except Exception as e:
-            logger.exception("Error updating conversation title")
+            logger.exception(f"Error updating conversation title: {str(e)}")
             raise
 

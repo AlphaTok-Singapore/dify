@@ -13,7 +13,7 @@ import logging
 from flask import Blueprint, jsonify, request
 from flask_cors import cross_origin
 
-from ...services.alphamind.workflow_service import WorkflowService
+from services.alphamind.workflow_service import WorkflowService
 
 # Create blueprint
 workflow_bp = Blueprint('alphamind_workflow', __name__, url_prefix='/api/alphamind/workflows')
@@ -54,7 +54,7 @@ class WorkflowController:
             }), 200
 
         except Exception as e:
-            logger.exception("Error getting workflows")
+            logger.exception(f"Error getting workflows: {str(e)}")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -100,7 +100,7 @@ class WorkflowController:
             }), 201
 
         except Exception as e:
-            logger.exception("Error creating workflow")
+            logger.exception(f"Error creating workflow: {str(e)}")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -128,7 +128,7 @@ class WorkflowController:
             }), 200
 
         except Exception as e:
-            logger.exception("Error getting workflow")
+            logger.exception(f"Error getting workflow: {str(e)}")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -164,7 +164,7 @@ class WorkflowController:
             }), 200
 
         except Exception as e:
-            logger.exception("Error updating workflow")
+            logger.exception(f"Error updating workflow: {str(e)}")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -191,7 +191,7 @@ class WorkflowController:
             }), 200
 
         except Exception as e:
-            logger.exception("Error deleting workflow")
+            logger.exception(f"Error deleting workflow: {str(e)}")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -216,7 +216,7 @@ class WorkflowController:
             }), 200
 
         except Exception as e:
-            logger.exception("Error executing workflow")
+            logger.exception(f"Error executing workflow: {str(e)}")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -247,7 +247,7 @@ class WorkflowController:
             }), 200
 
         except Exception as e:
-            logger.exception("Error getting workflow executions")
+            logger.exception(f"Error getting workflow executions: {str(e)}")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -275,7 +275,7 @@ class WorkflowController:
             }), 200
 
         except Exception as e:
-            logger.exception("Error getting execution details")
+            logger.exception(f"Error getting execution details: {str(e)}")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -302,7 +302,7 @@ class WorkflowController:
             }), 200
 
         except Exception as e:
-            logger.exception("Error stopping execution")
+            logger.exception(f"Error stopping execution: {str(e)}")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -329,7 +329,7 @@ class WorkflowController:
             }), 200
 
         except Exception as e:
-            logger.exception("Error activating workflow")
+            logger.exception(f"Error activating workflow: {str(e)}")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -356,7 +356,7 @@ class WorkflowController:
             }), 200
 
         except Exception as e:
-            logger.exception("Error deactivating workflow")
+            logger.exception(f"Error deactivating workflow: {str(e)}")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -381,7 +381,7 @@ class WorkflowController:
             }), 200
 
         except Exception as e:
-            logger.exception("Error getting workflow templates")
+            logger.exception(f"Error getting workflow templates: {str(e)}")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -417,7 +417,7 @@ class WorkflowController:
             }), 201
 
         except Exception as e:
-            logger.exception("Error creating workflow from template")
+            logger.exception(f"Error creating workflow from template: {str(e)}")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -440,7 +440,7 @@ class WorkflowController:
             }), 200
 
         except Exception as e:
-            logger.exception("Error syncing workflow with n8n")
+            logger.exception(f"Error syncing workflow with n8n: {str(e)}")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -464,7 +464,7 @@ class WorkflowController:
             }), 200
 
         except Exception as e:
-            logger.exception("Error handling n8n webhook")
+            logger.exception(f"Error handling n8n webhook: {str(e)}")
             return jsonify({
                 'success': False,
                 'error': str(e),

@@ -134,35 +134,39 @@ def upgrade():
     with op.batch_alter_table('apps', schema=None) as batch_op:
         batch_op.create_index('app_tenant_id_idx', ['tenant_id'], unique=False)
 
-    op.execute('CREATE SEQUENCE task_id_sequence;')
-    op.execute('CREATE SEQUENCE taskset_id_sequence;')
+    op.execute('CREATE SEQUENCE IF NOT EXISTS task_id_sequence;')
+    op.execute('CREATE SEQUENCE IF NOT EXISTS taskset_id_sequence;')
 
-    op.create_table('celery_taskmeta',
-    sa.Column('id', sa.Integer(), nullable=False,
-              server_default=sa.text('nextval(\'task_id_sequence\')')),
-    sa.Column('task_id', sa.String(length=155), nullable=True),
-    sa.Column('status', sa.String(length=50), nullable=True),
-    sa.Column('result', sa.PickleType(), nullable=True),
-    sa.Column('date_done', sa.DateTime(), nullable=True),
-    sa.Column('traceback', sa.Text(), nullable=True),
-    sa.Column('name', sa.String(length=155), nullable=True),
-    sa.Column('args', sa.LargeBinary(), nullable=True),
-    sa.Column('kwargs', sa.LargeBinary(), nullable=True),
-    sa.Column('worker', sa.String(length=155), nullable=True),
-    sa.Column('retries', sa.Integer(), nullable=True),
-    sa.Column('queue', sa.String(length=155), nullable=True),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('task_id')
+    op.execute("""
+    CREATE TABLE IF NOT EXISTS celery_taskmeta (
+        id INTEGER DEFAULT nextval('task_id_sequence') NOT NULL,
+        task_id VARCHAR(155),
+        status VARCHAR(50),
+        result BYTEA,
+        date_done TIMESTAMP WITHOUT TIME ZONE,
+        traceback TEXT,
+        name VARCHAR(155),
+        args BYTEA,
+        kwargs BYTEA,
+        worker VARCHAR(155),
+        retries INTEGER,
+        queue VARCHAR(155),
+        CONSTRAINT celery_taskmeta_pkey PRIMARY KEY (id),
+        CONSTRAINT celery_taskmeta_task_id_key UNIQUE (task_id)
     )
-    op.create_table('celery_tasksetmeta',
-    sa.Column('id', sa.Integer(), nullable=False,
-              server_default=sa.text('nextval(\'taskset_id_sequence\')')),
-    sa.Column('taskset_id', sa.String(length=155), nullable=True),
-    sa.Column('result', sa.PickleType(), nullable=True),
-    sa.Column('date_done', sa.DateTime(), nullable=True),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('taskset_id')
+    """)
+
+    op.execute("""
+    CREATE TABLE IF NOT EXISTS celery_tasksetmeta (
+        id INTEGER DEFAULT nextval('taskset_id_sequence') NOT NULL,
+        taskset_id VARCHAR(155),
+        result BYTEA,
+        date_done TIMESTAMP WITHOUT TIME ZONE,
+        CONSTRAINT celery_tasksetmeta_pkey PRIMARY KEY (id),
+        CONSTRAINT celery_tasksetmeta_taskset_id_key UNIQUE (taskset_id)
     )
+    """)
+
     op.create_table('conversations',
     sa.Column('id', postgresql.UUID(), server_default=sa.text('uuid_generate_v4()'), nullable=False),
     sa.Column('app_id', postgresql.UUID(), nullable=False),
@@ -444,6 +448,85 @@ def upgrade():
         batch_op.create_index('message_feedback_conversation_idx', ['conversation_id', 'from_source', 'rating'], unique=False)
         batch_op.create_index('message_feedback_message_idx', ['message_id', 'from_source'], unique=False)
 
+    op.create_table('message_annotations',
+    sa.Column('id', postgresql.UUID(), server_default=sa.text('uuid_generate_v4()'), nullable=False),
+    sa.Column('app_id', postgresql.UUID(), nullable=False),
+    sa.Column('conversation_id', postgresql.UUID(), nullable=False),
+    sa.Column('message_id', postgresql.UUID(), nullable=False),
+    sa.Column('content', sa.Text(), nullable=False),
+    sa.Column('from_source', sa.String(length=255), nullable=False),
+    sa.Column('from_account_id', postgresql.UUID(), nullable=True),
+    sa.Column('created_at', sa.DateTime(), server_default=sa.text('CURRENT_TIMESTAMP(0)'), nullable=False),
+    sa.Column('updated_at', sa.DateTime(), server_default=sa.text('CURRENT_TIMESTAMP(0)'), nullable=False),
+    sa.PrimaryKeyConstraint('id', name='message_annotation_pkey')
+    )
+    with op.batch_alter_table('message_annotations', schema=None) as batch_op:
+        batch_op.create_index('message_annotation_app_idx', ['app_id'], unique=False)
+        batch_op.create_index('message_annotation_conversation_idx', ['conversation_id'], unique=False)
+        batch_op.create_index('message_annotation_message_idx', ['message_id'], unique=False)
+
+    op.create_table('tenants',
+    sa.Column('id', postgresql.UUID(), server_default=sa.text('uuid_generate_v4()'), nullable=False),
+    sa.Column('status', sa.String(length=255), nullable=False, server_default='normal'),
+    sa.Column('created_at', sa.DateTime(), server_default=sa.text('CURRENT_TIMESTAMP(0)'), nullable=False),
+    sa.Column('updated_at', sa.DateTime(), server_default=sa.text('CURRENT_TIMESTAMP(0)'), nullable=False),
+    sa.PrimaryKeyConstraint('id', name='tenant_pkey')
+    )
+
+    op.create_table('tenant_account_joins',
+    sa.Column('id', postgresql.UUID(), server_default=sa.text('uuid_generate_v4()'), nullable=False),
+    sa.Column('tenant_id', postgresql.UUID(), nullable=False),
+    sa.Column('account_id', postgresql.UUID(), nullable=False),
+    sa.Column('role', sa.String(length=255), nullable=False),
+    sa.Column('invited_by', postgresql.UUID(), nullable=True),
+    sa.Column('created_at', sa.DateTime(), server_default=sa.text('CURRENT_TIMESTAMP(0)'), nullable=False),
+    sa.Column('updated_at', sa.DateTime(), server_default=sa.text('CURRENT_TIMESTAMP(0)'), nullable=False),
+    sa.PrimaryKeyConstraint('id', name='tenant_account_join_pkey')
+    )
+    with op.batch_alter_table('tenant_account_joins', schema=None) as batch_op:
+        batch_op.create_index('tenant_account_join_account_idx', ['account_id'], unique=False)
+        batch_op.create_index('tenant_account_join_tenant_idx', ['tenant_id'], unique=False)
+
+    op.create_table('messages',
+    sa.Column('id', postgresql.UUID(), server_default=sa.text('uuid_generate_v4()'), nullable=False),
+    sa.Column('app_id', postgresql.UUID(), nullable=False),
+    sa.Column('model_provider', sa.String(length=255), nullable=False),
+    sa.Column('model_id', sa.String(length=255), nullable=False),
+    sa.Column('override_model_configs', sa.Text(), nullable=True),
+    sa.Column('conversation_id', postgresql.UUID(), nullable=False),
+    sa.Column('inputs', sa.JSON(), nullable=True),
+    sa.Column('query', sa.Text(), nullable=False),
+    sa.Column('message', sa.JSON(), nullable=False),
+    sa.Column('message_tokens', sa.Integer(), nullable=False, server_default=sa.text('0')),
+    sa.Column('message_unit_price', sa.Numeric(precision=10, scale=4), nullable=False),
+    sa.Column('message_price_unit', sa.Numeric(precision=10, scale=7), nullable=False, server_default=sa.text('0.001')),
+    sa.Column('answer', sa.Text(), nullable=False),
+    sa.Column('answer_tokens', sa.Integer(), nullable=False, server_default=sa.text('0')),
+    sa.Column('answer_unit_price', sa.Numeric(precision=10, scale=4), nullable=False),
+    sa.Column('answer_price_unit', sa.Numeric(precision=10, scale=7), nullable=False, server_default=sa.text('0.001')),
+    sa.Column('parent_message_id', postgresql.UUID(), nullable=True),
+    sa.Column('provider_response_latency', sa.Float(), nullable=False, server_default=sa.text('0')),
+    sa.Column('total_price', sa.Numeric(precision=10, scale=7), nullable=True),
+    sa.Column('currency', sa.String(length=255), nullable=False),
+    sa.Column('status', sa.String(length=255), nullable=False, server_default=sa.text("'normal'::character varying")),
+    sa.Column('error', sa.Text(), nullable=True),
+    sa.Column('message_metadata', sa.Text(), nullable=True),
+    sa.Column('invoke_from', sa.String(length=255), nullable=True),
+    sa.Column('from_source', sa.String(length=255), nullable=False),
+    sa.Column('from_end_user_id', postgresql.UUID(), nullable=True),
+    sa.Column('from_account_id', postgresql.UUID(), nullable=True),
+    sa.Column('created_at', sa.DateTime(), server_default=sa.text('CURRENT_TIMESTAMP(0)'), nullable=False),
+    sa.Column('updated_at', sa.DateTime(), server_default=sa.text('CURRENT_TIMESTAMP(0)'), nullable=False),
+    sa.Column('agent_based', sa.Boolean(), nullable=True),
+    sa.PrimaryKeyConstraint('id', name='message_pkey')
+    )
+    with op.batch_alter_table('messages', schema=None) as batch_op:
+        batch_op.create_index('message_app_id_idx', ['app_id', 'created_at'], unique=False)
+        batch_op.create_index('message_conversation_id_idx', ['conversation_id'], unique=False)
+        batch_op.create_index('message_end_user_idx', ['app_id', 'from_source', 'from_end_user_id'], unique=False)
+        batch_op.create_index('message_account_idx', ['app_id', 'from_source', 'from_account_id'], unique=False)
+        batch_op.create_index('message_created_at_idx', ['created_at'], unique=False)
+
     op.create_table('operation_logs',
     sa.Column('id', postgresql.UUID(), server_default=sa.text('uuid_generate_v4()'), nullable=False),
     sa.Column('tenant_id', postgresql.UUID(), nullable=False),
@@ -548,250 +631,32 @@ def upgrade():
         batch_op.create_index('site_app_id_idx', ['app_id'], unique=False)
         batch_op.create_index('site_code_idx', ['code', 'status'], unique=False)
 
-    op.create_table('tenant_account_joins',
-    sa.Column('id', postgresql.UUID(), server_default=sa.text('uuid_generate_v4()'), nullable=False),
-    sa.Column('tenant_id', postgresql.UUID(), nullable=False),
-    sa.Column('account_id', postgresql.UUID(), nullable=False),
-    sa.Column('role', sa.String(length=16), server_default='normal', nullable=False),
-    sa.Column('invited_by', postgresql.UUID(), nullable=True),
-    sa.Column('created_at', sa.DateTime(), server_default=sa.text('CURRENT_TIMESTAMP(0)'), nullable=False),
-    sa.Column('updated_at', sa.DateTime(), server_default=sa.text('CURRENT_TIMESTAMP(0)'), nullable=False),
-    sa.PrimaryKeyConstraint('id', name='tenant_account_join_pkey'),
-    sa.UniqueConstraint('tenant_id', 'account_id', name='unique_tenant_account_join')
-    )
-    with op.batch_alter_table('tenant_account_joins', schema=None) as batch_op:
-        batch_op.create_index('tenant_account_join_account_id_idx', ['account_id'], unique=False)
-        batch_op.create_index('tenant_account_join_tenant_id_idx', ['tenant_id'], unique=False)
-
-    op.create_table('tenants',
-    sa.Column('id', postgresql.UUID(), server_default=sa.text('uuid_generate_v4()'), nullable=False),
-    sa.Column('name', sa.String(length=255), nullable=False),
-    sa.Column('encrypt_public_key', sa.Text(), nullable=True),
-    sa.Column('plan', sa.String(length=255), server_default=sa.text("'basic'::character varying"), nullable=False),
-    sa.Column('status', sa.String(length=255), server_default=sa.text("'normal'::character varying"), nullable=False),
-    sa.Column('created_at', sa.DateTime(), server_default=sa.text('CURRENT_TIMESTAMP(0)'), nullable=False),
-    sa.Column('updated_at', sa.DateTime(), server_default=sa.text('CURRENT_TIMESTAMP(0)'), nullable=False),
-    sa.PrimaryKeyConstraint('id', name='tenant_pkey')
-    )
     op.create_table('upload_files',
     sa.Column('id', postgresql.UUID(), server_default=sa.text('uuid_generate_v4()'), nullable=False),
     sa.Column('tenant_id', postgresql.UUID(), nullable=False),
-    sa.Column('storage_type', sa.String(length=255), nullable=False),
+    sa.Column('type', sa.String(length=255), nullable=False),
     sa.Column('key', sa.String(length=255), nullable=False),
     sa.Column('name', sa.String(length=255), nullable=False),
     sa.Column('size', sa.Integer(), nullable=False),
     sa.Column('extension', sa.String(length=255), nullable=False),
-    sa.Column('mime_type', sa.String(length=255), nullable=True),
     sa.Column('created_by', postgresql.UUID(), nullable=False),
     sa.Column('created_at', sa.DateTime(), server_default=sa.text('CURRENT_TIMESTAMP(0)'), nullable=False),
-    sa.Column('used', sa.Boolean(), server_default=sa.text('false'), nullable=False),
-    sa.Column('used_by', postgresql.UUID(), nullable=True),
-    sa.Column('used_at', sa.DateTime(), nullable=True),
-    sa.Column('hash', sa.String(length=255), nullable=True),
     sa.PrimaryKeyConstraint('id', name='upload_file_pkey')
     )
-    with op.batch_alter_table('upload_files', schema=None) as batch_op:
-        batch_op.create_index('upload_file_tenant_idx', ['tenant_id'], unique=False)
-
-    op.create_table('message_annotations',
-    sa.Column('id', postgresql.UUID(), server_default=sa.text('uuid_generate_v4()'), nullable=False),
-    sa.Column('app_id', postgresql.UUID(), nullable=False),
-    sa.Column('conversation_id', postgresql.UUID(), nullable=False),
-    sa.Column('message_id', postgresql.UUID(), nullable=False),
-    sa.Column('content', sa.Text(), nullable=False),
-    sa.Column('account_id', postgresql.UUID(), nullable=False),
+    op.create_table('system_variables',
+    sa.Column('id', sa.UUID(), nullable=False),
+    sa.Column('tenant_id', sa.UUID(), nullable=True),
+    sa.Column('variables', sa.JSON(), nullable=True),
     sa.Column('created_at', sa.DateTime(), server_default=sa.text('CURRENT_TIMESTAMP(0)'), nullable=False),
     sa.Column('updated_at', sa.DateTime(), server_default=sa.text('CURRENT_TIMESTAMP(0)'), nullable=False),
-    sa.PrimaryKeyConstraint('id', name='message_annotation_pkey')
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_system_variables'))
     )
-    with op.batch_alter_table('message_annotations', schema=None) as batch_op:
-        batch_op.create_index('message_annotation_app_idx', ['app_id'], unique=False)
-        batch_op.create_index('message_annotation_conversation_idx', ['conversation_id'], unique=False)
-        batch_op.create_index('message_annotation_message_idx', ['message_id'], unique=False)
-
-    op.create_table('messages',
-    sa.Column('id', postgresql.UUID(), server_default=sa.text('uuid_generate_v4()'), nullable=False),
-    sa.Column('app_id', postgresql.UUID(), nullable=False),
-    sa.Column('model_provider', sa.String(length=255), nullable=False),
-    sa.Column('model_id', sa.String(length=255), nullable=False),
-    sa.Column('override_model_configs', sa.Text(), nullable=True),
-    sa.Column('conversation_id', postgresql.UUID(), nullable=False),
-    sa.Column('inputs', sa.JSON(), nullable=True),
-    sa.Column('query', sa.Text(), nullable=False),
-    sa.Column('message', sa.JSON(), nullable=False),
-    sa.Column('message_tokens', sa.Integer(), server_default=sa.text('0'), nullable=False),
-    sa.Column('message_unit_price', sa.Numeric(precision=10, scale=4), nullable=False),
-    sa.Column('answer', sa.Text(), nullable=False),
-    sa.Column('answer_tokens', sa.Integer(), server_default=sa.text('0'), nullable=False),
-    sa.Column('answer_unit_price', sa.Numeric(precision=10, scale=4), nullable=False),
-    sa.Column('provider_response_latency', sa.Float(), server_default=sa.text('0'), nullable=False),
-    sa.Column('total_price', sa.Numeric(precision=10, scale=7), nullable=True),
-    sa.Column('currency', sa.String(length=255), nullable=False),
-    sa.Column('from_source', sa.String(length=255), nullable=False),
-    sa.Column('from_end_user_id', postgresql.UUID(), nullable=True),
-    sa.Column('from_account_id', postgresql.UUID(), nullable=True),
-    sa.Column('created_at', sa.DateTime(), server_default=sa.text('CURRENT_TIMESTAMP(0)'), nullable=False),
-    sa.Column('updated_at', sa.DateTime(), server_default=sa.text('CURRENT_TIMESTAMP(0)'), nullable=False),
-    sa.Column('agent_based', sa.Boolean(), server_default=sa.text('false'), nullable=False),
-    sa.PrimaryKeyConstraint('id', name='message_pkey')
-    )
-    with op.batch_alter_table('messages', schema=None) as batch_op:
-        batch_op.create_index('message_account_idx', ['app_id', 'from_source', 'from_account_id'], unique=False)
-        batch_op.create_index('message_app_id_idx', ['app_id', 'created_at'], unique=False)
-        batch_op.create_index('message_conversation_id_idx', ['conversation_id'], unique=False)
-        batch_op.create_index('message_end_user_idx', ['app_id', 'from_source', 'from_end_user_id'], unique=False)
-
-    # ### end Alembic commands ###
+    op.execute('CREATE SEQUENCE IF NOT EXISTS task_id_sequence;')
 
 
 def downgrade():
     # ### commands auto generated by Alembic - please adjust! ###
-    with op.batch_alter_table('messages', schema=None) as batch_op:
-        batch_op.drop_index('message_end_user_idx')
-        batch_op.drop_index('message_conversation_id_idx')
-        batch_op.drop_index('message_app_id_idx')
-        batch_op.drop_index('message_account_idx')
-
-    op.drop_table('messages')
-    with op.batch_alter_table('message_annotations', schema=None) as batch_op:
-        batch_op.drop_index('message_annotation_message_idx')
-        batch_op.drop_index('message_annotation_conversation_idx')
-        batch_op.drop_index('message_annotation_app_idx')
-
-    op.drop_table('message_annotations')
-    with op.batch_alter_table('upload_files', schema=None) as batch_op:
-        batch_op.drop_index('upload_file_tenant_idx')
-
-    op.drop_table('upload_files')
-    op.drop_table('tenants')
-    with op.batch_alter_table('tenant_account_joins', schema=None) as batch_op:
-        batch_op.drop_index('tenant_account_join_tenant_id_idx')
-        batch_op.drop_index('tenant_account_join_account_id_idx')
-
-    op.drop_table('tenant_account_joins')
-    with op.batch_alter_table('sites', schema=None) as batch_op:
-        batch_op.drop_index('site_code_idx')
-        batch_op.drop_index('site_app_id_idx')
-
-    op.drop_table('sites')
-    op.drop_table('sessions')
-    with op.batch_alter_table('saved_messages', schema=None) as batch_op:
-        batch_op.drop_index('saved_message_message_idx')
-
-    op.drop_table('saved_messages')
-    with op.batch_alter_table('recommended_apps', schema=None) as batch_op:
-        batch_op.drop_index('recommended_app_is_listed_idx')
-        batch_op.drop_index('recommended_app_app_id_idx')
-
-    op.drop_table('recommended_apps')
-    with op.batch_alter_table('providers', schema=None) as batch_op:
-        batch_op.drop_index('provider_tenant_id_provider_idx')
-
-    op.drop_table('providers')
-    with op.batch_alter_table('pinned_conversations', schema=None) as batch_op:
-        batch_op.drop_index('pinned_conversation_conversation_idx')
-
-    op.drop_table('pinned_conversations')
-    with op.batch_alter_table('operation_logs', schema=None) as batch_op:
-        batch_op.drop_index('operation_log_account_action_idx')
-
-    op.drop_table('operation_logs')
-    with op.batch_alter_table('message_feedbacks', schema=None) as batch_op:
-        batch_op.drop_index('message_feedback_message_idx')
-        batch_op.drop_index('message_feedback_conversation_idx')
-        batch_op.drop_index('message_feedback_app_idx')
-
-    op.drop_table('message_feedbacks')
-    with op.batch_alter_table('message_chains', schema=None) as batch_op:
-        batch_op.drop_index('message_chain_message_id_idx')
-
-    op.drop_table('message_chains')
-    with op.batch_alter_table('message_agent_thoughts', schema=None) as batch_op:
-        batch_op.drop_index('message_agent_thought_message_id_idx')
-        batch_op.drop_index('message_agent_thought_message_chain_id_idx')
-
-    op.drop_table('message_agent_thoughts')
-    with op.batch_alter_table('invitation_codes', schema=None) as batch_op:
-        batch_op.drop_index('invitation_codes_code_idx')
-        batch_op.drop_index('invitation_codes_batch_idx')
-
-    op.drop_table('invitation_codes')
-    with op.batch_alter_table('installed_apps', schema=None) as batch_op:
-        batch_op.drop_index('installed_app_tenant_id_idx')
-        batch_op.drop_index('installed_app_app_id_idx')
-
-    op.drop_table('installed_apps')
-    with op.batch_alter_table('end_users', schema=None) as batch_op:
-        batch_op.drop_index('end_user_tenant_session_id_idx')
-        batch_op.drop_index('end_user_session_id_idx')
-
-    op.drop_table('end_users')
-    op.drop_table('embeddings')
-    with op.batch_alter_table('documents', schema=None) as batch_op:
-        batch_op.drop_index('document_is_paused_idx')
-        batch_op.drop_index('document_dataset_id_idx')
-
-    op.drop_table('documents')
-    with op.batch_alter_table('document_segments', schema=None) as batch_op:
-        batch_op.drop_index('document_segment_tenant_document_idx')
-        batch_op.drop_index('document_segment_tenant_dataset_idx')
-        batch_op.drop_index('document_segment_document_id_idx')
-        batch_op.drop_index('document_segment_dataset_node_idx')
-        batch_op.drop_index('document_segment_dataset_id_idx')
-
-    op.drop_table('document_segments')
-    op.drop_table('dify_setups')
-    with op.batch_alter_table('datasets', schema=None) as batch_op:
-        batch_op.drop_index('dataset_tenant_idx')
-
-    op.drop_table('datasets')
-    with op.batch_alter_table('dataset_queries', schema=None) as batch_op:
-        batch_op.drop_index('dataset_query_dataset_id_idx')
-
-    op.drop_table('dataset_queries')
-    with op.batch_alter_table('dataset_process_rules', schema=None) as batch_op:
-        batch_op.drop_index('dataset_process_rule_dataset_id_idx')
-
-    op.drop_table('dataset_process_rules')
-    with op.batch_alter_table('dataset_keyword_tables', schema=None) as batch_op:
-        batch_op.drop_index('dataset_keyword_table_dataset_id_idx')
-
-    op.drop_table('dataset_keyword_tables')
-    with op.batch_alter_table('conversations', schema=None) as batch_op:
-        batch_op.drop_index('conversation_app_from_user_idx')
-
-    op.drop_table('conversations')
-    op.drop_table('celery_tasksetmeta')
-    op.drop_table('celery_taskmeta')
-
-    op.execute('DROP SEQUENCE taskset_id_sequence;')
-    op.execute('DROP SEQUENCE task_id_sequence;')
-    with op.batch_alter_table('apps', schema=None) as batch_op:
-        batch_op.drop_index('app_tenant_id_idx')
-
-    op.drop_table('apps')
-    with op.batch_alter_table('app_model_configs', schema=None) as batch_op:
-        batch_op.drop_index('app_app_id_idx')
-
-    op.drop_table('app_model_configs')
-    with op.batch_alter_table('app_dataset_joins', schema=None) as batch_op:
-        batch_op.drop_index('app_dataset_join_app_dataset_idx')
-
-    op.drop_table('app_dataset_joins')
-    with op.batch_alter_table('api_tokens', schema=None) as batch_op:
-        batch_op.drop_index('api_token_token_idx')
-        batch_op.drop_index('api_token_app_id_type_idx')
-
-    op.drop_table('api_tokens')
-    with op.batch_alter_table('api_requests', schema=None) as batch_op:
-        batch_op.drop_index('api_request_token_idx')
-
-    op.drop_table('api_requests')
-    with op.batch_alter_table('accounts', schema=None) as batch_op:
-        batch_op.drop_index('account_email_idx')
-
-    op.drop_table('accounts')
-    op.drop_table('account_integrates')
-
-    op.execute('DROP EXTENSION IF EXISTS "uuid-ossp";')
+    op.execute('DROP SEQUENCE IF EXISTS task_id_sequence;')
+    op.drop_table('system_variables')
+    op.drop_index(op.f('ix_tools_tenant_id'), table_name='tools')
     # ### end Alembic commands ###

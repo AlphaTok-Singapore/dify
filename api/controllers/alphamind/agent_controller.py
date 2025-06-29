@@ -13,7 +13,7 @@ import logging
 from flask import Blueprint, jsonify, request
 from flask_cors import cross_origin
 
-from ...services.alphamind.agent_service import AgentService
+from services.alphamind.agent_service import AgentService
 
 # Create blueprint
 agent_bp = Blueprint('alphamind_agent', __name__, url_prefix='/api/alphamind/agents')
@@ -22,6 +22,8 @@ agent_bp = Blueprint('alphamind_agent', __name__, url_prefix='/api/alphamind/age
 agent_service = AgentService()
 
 logger = logging.getLogger(__name__)
+
+AGENT_NOT_FOUND_MSG = 'Agent not found'
 
 
 class AgentController:
@@ -54,7 +56,7 @@ class AgentController:
             }), 200
 
         except Exception as e:
-            logger.exception("Error getting agents")
+            logger.exception(f"Error getting agents: {str(e)}")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -100,7 +102,7 @@ class AgentController:
             }), 201
 
         except Exception as e:
-            logger.exception("Error creating agent")
+            logger.exception(f"Error creating agent: {str(e)}")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -118,7 +120,7 @@ class AgentController:
             if not agent:
                 return jsonify({
                     'success': False,
-                    'message': 'Agent not found'
+                    'message': AGENT_NOT_FOUND_MSG
                 }), 404
 
             return jsonify({
@@ -128,7 +130,7 @@ class AgentController:
             }), 200
 
         except Exception as e:
-            logger.exception("Error getting agent")
+            logger.exception(f"Error getting agent: {str(e)}")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -154,7 +156,7 @@ class AgentController:
             if not agent:
                 return jsonify({
                     'success': False,
-                    'message': 'Agent not found'
+                    'message': AGENT_NOT_FOUND_MSG
                 }), 404
 
             return jsonify({
@@ -164,7 +166,7 @@ class AgentController:
             }), 200
 
         except Exception as e:
-            logger.exception("Error updating agent")
+            logger.exception(f"Error updating agent: {str(e)}")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -182,7 +184,7 @@ class AgentController:
             if not success:
                 return jsonify({
                     'success': False,
-                    'message': 'Agent not found'
+                    'message': AGENT_NOT_FOUND_MSG
                 }), 404
 
             return jsonify({
@@ -191,7 +193,7 @@ class AgentController:
             }), 200
 
         except Exception as e:
-            logger.exception("Error deleting agent")
+            logger.exception(f"Error deleting agent: {str(e)}")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -209,7 +211,7 @@ class AgentController:
             if not success:
                 return jsonify({
                     'success': False,
-                    'message': 'Agent not found or already active'
+                    'message': AGENT_NOT_FOUND_MSG
                 }), 404
 
             return jsonify({
@@ -218,7 +220,7 @@ class AgentController:
             }), 200
 
         except Exception as e:
-            logger.exception("Error activating agent")
+            logger.exception(f"Error activating agent: {str(e)}")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -236,7 +238,7 @@ class AgentController:
             if not success:
                 return jsonify({
                     'success': False,
-                    'message': 'Agent not found or already inactive'
+                    'message': AGENT_NOT_FOUND_MSG
                 }), 404
 
             return jsonify({
@@ -245,7 +247,7 @@ class AgentController:
             }), 200
 
         except Exception as e:
-            logger.exception("Error deactivating agent")
+            logger.exception(f"Error deactivating agent: {str(e)}")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -266,7 +268,7 @@ class AgentController:
             if not success:
                 return jsonify({
                     'success': False,
-                    'message': 'Agent not found or training failed to start'
+                    'message': AGENT_NOT_FOUND_MSG
                 }), 404
 
             return jsonify({
@@ -275,7 +277,7 @@ class AgentController:
             }), 200
 
         except Exception as e:
-            logger.exception("Error training agent")
+            logger.exception(f"Error training agent: {str(e)}")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -295,7 +297,7 @@ class AgentController:
             if not analytics:
                 return jsonify({
                     'success': False,
-                    'message': 'Agent not found'
+                    'message': AGENT_NOT_FOUND_MSG
                 }), 404
 
             return jsonify({
@@ -305,7 +307,7 @@ class AgentController:
             }), 200
 
         except Exception as e:
-            logger.exception("Error getting agent analytics")
+            logger.exception(f"Error getting agent analytics: {str(e)}")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -327,7 +329,7 @@ class AgentController:
             }), 200
 
         except Exception as e:
-            logger.exception("Error getting agent skills")
+            logger.exception(f"Error getting agent skills: {str(e)}")
             return jsonify({
                 'success': False,
                 'error': str(e),
@@ -362,7 +364,7 @@ class AgentController:
             }), 200
 
         except Exception as e:
-            logger.exception("Error adding skill to agent")
+            logger.exception(f"Error adding skill to agent: {str(e)}")
             return jsonify({
                 'success': False,
                 'error': str(e),

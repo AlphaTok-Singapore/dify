@@ -13,7 +13,7 @@ class Agent:
     """
     Agent model representing an AI assistant
     """
-
+    
     def __init__(
         self,
         id: str | None = None,
@@ -41,13 +41,13 @@ class Agent:
         self.created_at = created_at or datetime.utcnow()
         self.updated_at = updated_at or datetime.utcnow()
         self.metadata = metadata or {}
-
+        
         # Performance metrics
         self.conversations_count = 0
         self.messages_count = 0
         self.accuracy_score = 0.0
         self.last_active_at = None
-
+        
     def to_dict(self) -> dict:
         """Convert agent to dictionary"""
         return {
@@ -70,56 +70,56 @@ class Agent:
                 'accuracy_score': self.accuracy_score
             }
         }
-
+    
     def activate(self):
         """Activate the agent"""
         self.status = "active"
         self.updated_at = datetime.utcnow()
-
+    
     def deactivate(self):
         """Deactivate the agent"""
         self.status = "inactive"
         self.updated_at = datetime.utcnow()
-
+    
     def start_training(self):
         """Start training the agent"""
         self.status = "training"
         self.updated_at = datetime.utcnow()
-
+    
     def add_skill(self, skill_id: str):
         """Add a skill to the agent"""
         if skill_id not in self.skills:
             self.skills.append(skill_id)
             self.updated_at = datetime.utcnow()
-
+    
     def remove_skill(self, skill_id: str):
         """Remove a skill from the agent"""
         if skill_id in self.skills:
             self.skills.remove(skill_id)
             self.updated_at = datetime.utcnow()
-
+    
     def add_knowledge_base(self, kb_id: str):
         """Add a knowledge base to the agent"""
         if kb_id not in self.knowledge_bases:
             self.knowledge_bases.append(kb_id)
             self.updated_at = datetime.utcnow()
-
+    
     def remove_knowledge_base(self, kb_id: str):
         """Remove a knowledge base from the agent"""
         if kb_id in self.knowledge_bases:
             self.knowledge_bases.remove(kb_id)
             self.updated_at = datetime.utcnow()
-
+    
     def update_config(self, key: str, value):
         """Update agent configuration"""
         self.config[key] = value
         self.updated_at = datetime.utcnow()
-
+    
     def update_metadata(self, key: str, value):
         """Update metadata"""
         self.metadata[key] = value
         self.updated_at = datetime.utcnow()
-
+    
     def update_performance(
         self,
         conversations: int | None = None,
@@ -134,28 +134,28 @@ class Agent:
         if accuracy is not None:
             self.accuracy_score = accuracy
         self.updated_at = datetime.utcnow()
-
+    
     def record_activity(self):
         """Record agent activity"""
         self.last_active_at = datetime.utcnow()
         self.updated_at = datetime.utcnow()
-
+    
     def is_active(self) -> bool:
         """Check if agent is active"""
         return self.status == "active"
-
+    
     def is_training(self) -> bool:
         """Check if agent is in training"""
         return self.status == "training"
-
+    
     def get_skill_count(self) -> int:
         """Get number of skills"""
         return len(self.skills)
-
+    
     def get_knowledge_base_count(self) -> int:
         """Get number of knowledge bases"""
         return len(self.knowledge_bases)
-
+    
     def get_summary(self) -> dict:
         """Get agent summary"""
         return {
@@ -170,7 +170,7 @@ class Agent:
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'last_active_at': self.last_active_at.isoformat() if self.last_active_at else None
         }
-
+    
     @classmethod
     def from_dict(cls, data: dict) -> 'Agent':
         """Create agent from dictionary"""
@@ -188,21 +188,21 @@ class Agent:
             updated_at=datetime.fromisoformat(data['updated_at']) if data.get('updated_at') else None,
             metadata=data.get('metadata', {})
         )
-
+        
         # Set performance metrics
         performance = data.get('performance', {})
         agent.conversations_count = performance.get('conversations_count', 0)
         agent.messages_count = performance.get('messages_count', 0)
         agent.accuracy_score = performance.get('accuracy_score', 0.0)
-
+        
         if data.get('last_active_at'):
             agent.last_active_at = datetime.fromisoformat(data['last_active_at'])
-
+            
         return agent
-
+    
     def __repr__(self):
         return f"<Agent(id='{self.id}', name='{self.name}', type='{self.agent_type}', status='{self.status}')>"
-
+    
     def __str__(self):
         return f"Agent: {self.name} ({self.agent_type}) - {self.status}"
 

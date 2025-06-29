@@ -22,9 +22,16 @@ def upgrade():
         batch_op.add_column(sa.Column('message_price_unit', sa.Numeric(precision=10, scale=7), server_default=sa.text('0.001'), nullable=False))
         batch_op.add_column(sa.Column('answer_price_unit', sa.Numeric(precision=10, scale=7), server_default=sa.text('0.001'), nullable=False))
 
+    # Check if columns already exist in messages table before adding them
+    connection = op.get_bind()
+    inspector = sa.inspect(connection)
+    columns = [col['name'] for col in inspector.get_columns('messages')]
+    
     with op.batch_alter_table('messages', schema=None) as batch_op:
-        batch_op.add_column(sa.Column('message_price_unit', sa.Numeric(precision=10, scale=7), server_default=sa.text('0.001'), nullable=False))
-        batch_op.add_column(sa.Column('answer_price_unit', sa.Numeric(precision=10, scale=7), server_default=sa.text('0.001'), nullable=False))
+        if 'message_price_unit' not in columns:
+            batch_op.add_column(sa.Column('message_price_unit', sa.Numeric(precision=10, scale=7), server_default=sa.text('0.001'), nullable=False))
+        if 'answer_price_unit' not in columns:
+            batch_op.add_column(sa.Column('answer_price_unit', sa.Numeric(precision=10, scale=7), server_default=sa.text('0.001'), nullable=False))
 
     # ### end Alembic commands ###
 
