@@ -1,5 +1,5 @@
 import type { Fetcher } from 'swr'
-import { del, get, patch, post, put } from './base'
+import { del, get, getPublic, patch, post, put } from './base'
 import type {
   AccountIntegrate,
   ApiBasedExtension,
@@ -308,7 +308,7 @@ export const fetchSupportRetrievalMethods: Fetcher<RetrievalMethodsRes, string> 
 }
 
 export const getSystemFeatures = () => {
-  return get<SystemFeatures>('/system-features')
+  return getPublic<SystemFeatures>('/system-features')
 }
 
 export const enableModel = (url: string, body: { model: string; model_type: ModelTypeEnum }) =>

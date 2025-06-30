@@ -187,6 +187,12 @@ class FeatureService:
             system_features.branding.enabled = True
             system_features.webapp_auth.enabled = True
             cls._fulfill_params_from_enterprise(system_features)
+        else:
+            # Enable webapp_auth if any authentication method is enabled
+            if (dify_config.ENABLE_EMAIL_CODE_LOGIN or 
+                dify_config.ENABLE_EMAIL_PASSWORD_LOGIN or 
+                dify_config.ENABLE_SOCIAL_OAUTH_LOGIN):
+                system_features.webapp_auth.enabled = True
 
         if dify_config.MARKETPLACE_ENABLED:
             system_features.enable_marketplace = True
@@ -201,6 +207,10 @@ class FeatureService:
         system_features.is_allow_register = dify_config.ALLOW_REGISTER
         system_features.is_allow_create_workspace = dify_config.ALLOW_CREATE_WORKSPACE
         system_features.is_email_setup = dify_config.MAIL_TYPE is not None and dify_config.MAIL_TYPE != ""
+        
+        # Set webapp_auth values from environment when enterprise is not enabled
+        system_features.webapp_auth.allow_email_code_login = dify_config.ENABLE_EMAIL_CODE_LOGIN
+        system_features.webapp_auth.allow_email_password_login = dify_config.ENABLE_EMAIL_PASSWORD_LOGIN
 
     @classmethod
     def _fulfill_params_from_env(cls, features: FeatureModel):
@@ -291,13 +301,23 @@ class FeatureService:
 
         if "WebAppAuth" in enterprise_info:
             features.webapp_auth.allow_sso = enterprise_info["WebAppAuth"].get("allowSso", False)
-            features.webapp_auth.allow_email_code_login = enterprise_info["WebAppAuth"].get(
-                "allowEmailCodeLogin", False
+            
+            # Get enterprise values, but fall back to environment variables if they are False
+            enterprise_email_code = enterprise_info["WebAppAuth"].get("allowEmailCodeLogin", False)
+            enterprise_email_password = enterprise_info["WebAppAuth"].get("allowEmailPasswordLogin", False)
+            
+            features.webapp_auth.allow_email_code_login = (
+                enterprise_email_code or dify_config.ENABLE_EMAIL_CODE_LOGIN
             )
-            features.webapp_auth.allow_email_password_login = enterprise_info["WebAppAuth"].get(
-                "allowEmailPasswordLogin", False
+            features.webapp_auth.allow_email_password_login = (
+                enterprise_email_password or dify_config.ENABLE_EMAIL_PASSWORD_LOGIN
             )
+            
             features.webapp_auth.sso_config.protocol = enterprise_info.get("SSOEnforcedForWebProtocol", "")
+        else:
+            # Fallback to environment variables when enterprise WebAppAuth is not configured
+            features.webapp_auth.allow_email_code_login = dify_config.ENABLE_EMAIL_CODE_LOGIN
+            features.webapp_auth.allow_email_password_login = dify_config.ENABLE_EMAIL_PASSWORD_LOGIN
 
         if "License" in enterprise_info:
             license_info = enterprise_info["License"]

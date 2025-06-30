@@ -41,6 +41,8 @@ services:
       CLUSTER_HOSTNAME: 'node1'
     volumes:
       - weaviate_data:/var/lib/weaviate
+    ports:
+      - "8080:8080"
 
   # Dify API 服务
   api:
@@ -71,6 +73,10 @@ services:
       EMAIL_ENABLE: true
       ENABLE_EMAIL_PASSWORD_LOGIN: 'true'
       ENABLE_EMAIL_CODE_LOGIN: 'true'
+      
+      # Plugin Daemon 配置
+      PLUGIN_DAEMON_URL: http://plugin_daemon:5002
+      PLUGIN_DAEMON_KEY: lYkiYYT6owG+71oLerGzA7GXCgOT++6ovaezWAjpCjf+Sjc3ZtU+qUEi
     depends_on:
       - db
       - redis
@@ -113,6 +119,14 @@ services:
     environment:
       NEXT_PUBLIC_API_URL: http://localhost:5001
       NEXT_PUBLIC_DIFY_API_URL: http://localhost:5001
+      NEXT_PUBLIC_API_PREFIX: http://localhost:5001/console/api
+      NEXT_PUBLIC_PUBLIC_API_PREFIX: http://localhost:5001/api
+      NEXT_PUBLIC_MARKETPLACE_API_PREFIX: https://marketplace.dify.ai/api/v1
+      NEXT_PUBLIC_MARKETPLACE_URL_PREFIX: https://marketplace.dify.ai
+      NEXT_PUBLIC_N8N_URL: http://localhost:5678
+      NEXT_PUBLIC_DEPLOY_ENV: DEVELOPMENT
+      NEXT_PUBLIC_EDITION: SELF_HOSTED
+      NEXT_TELEMETRY_DISABLED: 1
     depends_on:
       - api
     ports:
@@ -199,6 +213,51 @@ services:
     depends_on:
       - db  # 如果使用 PostgreSQL 数据库
 
+  # Plugin Daemon 服务 (插件管理守护进程)
+  plugin_daemon:
+    image: langgenius/dify-plugin-daemon:0.1.2-local
+    restart: always
+    environment:
+      # 数据库配置
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USERNAME: dify
+      DB_PASSWORD: dify123456
+      DB_DATABASE: dify_plugin
+      
+      # Redis 配置
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: dify123456
+      REDIS_DB: 3
+      
+      # 服务配置
+      SERVER_PORT: 5002
+      SERVER_KEY: lYkiYYT6owG+71oLerGzA7GXCgOT++6ovaezWAjpCjf+Sjc3ZtU+qUEi
+      
+      # Dify API 连接配置
+      DIFY_INNER_API_URL: http://api:5001
+      DIFY_INNER_API_KEY: QaHbTe77CtuXmsfyhR7+vRjI/+XbV1AaFy691iy+kGDv2Jvy0/eAh8Y1
+      
+      # 插件配置
+      MAX_PLUGIN_PACKAGE_SIZE: 52428800
+      PLUGIN_REMOTE_INSTALLING_HOST: 0.0.0.0
+      PLUGIN_REMOTE_INSTALLING_PORT: 5003
+      PLUGIN_WORKING_PATH: /app/storage/cwd
+      FORCE_VERIFYING_SIGNATURE: true
+      PYTHON_ENV_INIT_TIMEOUT: 120
+      PLUGIN_MAX_EXECUTION_TIMEOUT: 600
+      PLUGIN_STORAGE_TYPE: local
+      PLUGIN_STORAGE_LOCAL_ROOT: /app/storage
+      PLUGIN_INSTALLED_PATH: plugin
+    depends_on:
+      - db
+      - api
+    volumes:
+      - plugin_storage:/app/storage
+    ports:
+      - "5002:5002"
+
   # Nginx 反向代理
   nginx:
     image: nginx:alpine
@@ -218,6 +277,7 @@ volumes:
   redis_data:
   weaviate_data:
   app_storage:
+  plugin_storage:
 
   # n8n 数据卷 - 使用外部卷保护现有数据
   n8n_data:

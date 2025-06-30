@@ -38,7 +38,9 @@ export default function Home() {
               Automate workflows and integrations
             </p>
             <a 
-              href="/n8n" 
+              href={process.env.NEXT_PUBLIC_N8N_URL || "http://localhost:5678"} 
+              target="_blank"
+              rel="noopener noreferrer"
               className="inline-block bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700"
             >
               Open n8n

@@ -35,6 +35,10 @@ const NormalForm = () => {
   const init = useCallback(async () => {
     try {
       console.log('[signin/normalForm] systemFeatures:', systemFeatures)
+      console.log('[signin/normalForm] enable_email_code_login:', systemFeatures.enable_email_code_login)
+      console.log('[signin/normalForm] enable_email_password_login:', systemFeatures.enable_email_password_login)
+      console.log('[signin/normalForm] enable_social_oauth_login:', systemFeatures.enable_social_oauth_login)
+      console.log('[signin/normalForm] sso_enforced_for_signin:', systemFeatures.sso_enforced_for_signin)
       if (consoleToken && refreshToken) {
         localStorage.setItem('console_token', consoleToken)
         localStorage.setItem('refresh_token', refreshToken)
