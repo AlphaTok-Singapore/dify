@@ -1,5 +1,5 @@
 services:
-  # PostgreSQL 数据库
+  # PostgreSQL Database
   db:
     image: postgres:15-alpine
     restart: always
@@ -16,7 +16,7 @@ services:
       timeout: 10s
       retries: 5
 
-  # Redis 缓存
+  # Redis Cache
   redis:
     image: redis:7-alpine
     restart: always
@@ -29,7 +29,7 @@ services:
       timeout: 10s
       retries: 5
 
-  # Weaviate 向量数据库
+  # Weaviate Vector Database
   weaviate:
     image: semitechnologies/weaviate:1.19.0
     restart: always
@@ -39,12 +39,17 @@ services:
       PERSISTENCE_DATA_PATH: '/var/lib/weaviate'
       DEFAULT_VECTORIZER_MODULE: 'none'
       CLUSTER_HOSTNAME: 'node1'
+      AUTHENTICATION_APIKEY_ENABLED: 'true'
+      AUTHENTICATION_APIKEY_ALLOWED_KEYS: WVF5YThaHlkYwhGUSmCRgsX3tD5ngdN8pkih
+      AUTHENTICATION_APIKEY_USERS: hello@dify.ai
+      AUTHORIZATION_ADMINLIST_ENABLED: 'true'
+      AUTHORIZATION_ADMINLIST_USERS: hello@dify.ai
     volumes:
       - weaviate_data:/var/lib/weaviate
     ports:
       - "8080:8080"
 
-  # Dify API 服务
+  # Dify API Service
   api:
     build:
       context: ./api
@@ -54,7 +59,7 @@ services:
     environment:
       MODE: api
       LOG_LEVEL: INFO
-      SECRET_KEY: sk-9f73s3ljTXVcMT3Blb3ljTqtsKiGHXVcMT3BlbkFJLK7U
+      SECRET_KEY: ${SECRET_KEY}
       DATABASE_URL: postgresql://dify:dify123456@db:5432/dify
       REDIS_URL: redis://:dify123456@redis:6379/0
       CELERY_BROKER_URL: redis://:dify123456@redis:6379/1
@@ -67,6 +72,7 @@ services:
       APP_WEB_URL: ''
       FILES_URL: ''
       MIGRATION_ENABLED: 'true'
+      VECTOR_STORE: ${VECTOR_STORE}
       WEAVIATE_ENDPOINT: http://weaviate:8080
       WEAVIATE_API_KEY: WVF5YThaHlkYwhGUSmCRgsX3tD5ngdN8pkih
       OPENDAL_FS_ROOT: /app/storage
@@ -74,7 +80,7 @@ services:
       ENABLE_EMAIL_PASSWORD_LOGIN: 'true'
       ENABLE_EMAIL_CODE_LOGIN: 'true'
       
-      # Plugin Daemon 配置
+      # Plugin Daemon Configuration
       PLUGIN_DAEMON_URL: http://plugin_daemon:5002
       PLUGIN_DAEMON_KEY: lYkiYYT6owG+71oLerGzA7GXCgOT++6ovaezWAjpCjf+Sjc3ZtU+qUEi
     depends_on:
@@ -86,7 +92,7 @@ services:
     ports:
       - "5001:5001"
 
-  # Dify Worker 服务
+  # Dify Worker Service
   worker:
     build:
       context: ./api
@@ -95,10 +101,11 @@ services:
     environment:
       MODE: worker
       LOG_LEVEL: INFO
-      SECRET_KEY: sk-9f73s3ljTXVcMT3Blb3ljTqtsKiGHXVcMT3BlbkFJLK7U
+      SECRET_KEY: ${SECRET_KEY}
       DATABASE_URL: postgresql://dify:dify123456@db:5432/dify
       REDIS_URL: redis://:dify123456@redis:6379/0
       CELERY_BROKER_URL: redis://:dify123456@redis:6379/1
+      VECTOR_STORE: ${VECTOR_STORE}
       WEAVIATE_ENDPOINT: http://weaviate:8080
       WEAVIATE_API_KEY: WVF5YThaHlkYwhGUSmCRgsX3tD5ngdN8pkih
       OPENDAL_FS_ROOT: /app/storage
@@ -110,7 +117,7 @@ services:
     volumes:
       - app_storage:/app/storage
 
-  # Dify Web 前端
+  # Dify Web Frontend
   web:
     build:
       context: ./web
@@ -132,17 +139,19 @@ services:
     ports:
       - "3000:3000"
 
-  # AlphaMind API 服务
+  # AlphaMind API Service
   alphamind-api:
     build:
       context: ./docker/alphamind-api
       dockerfile: Dockerfile
     restart: always
     environment:
+      ALPHAMIND_JWT_SECRET_KEY: ${ALPHAMIND_JWT_SECRET_KEY}
       DATABASE_URL: postgresql://dify:dify123456@db:5432/dify
       REDIS_URL: redis://:dify123456@redis:6379/2
       DIFY_API_URL: http://api:5001
       N8N_API_URL: http://n8n:5678
+      JWT_SECRET_KEY: ${SECRET_KEY}
     depends_on:
       - db
       - redis
@@ -155,13 +164,14 @@ services:
       timeout: 5s
       retries: 5
 
-  # AlphaMind Web 前端
+  # AlphaMind Web Frontend
   alphamind-web:
     build:
       context: ./docker/alphamind-web
       dockerfile: Dockerfile
     restart: always
     environment:
+      NEXT_PUBLIC_JWT_SECRET_KEY: ${SECRET_KEY}
       NEXT_PUBLIC_API_URL: http://localhost:5100
       NEXT_PUBLIC_DIFY_API_URL: http://localhost:5001
     depends_on:
@@ -170,27 +180,27 @@ services:
     ports:
       - "3100:3000"
 
-  # n8n 工作流引擎 (兼容现有数据)
+  # n8n Workflow Engine (Compatible with existing data)
   n8n:
-    image: docker.n8n.io/n8nio/n8n  # 使用官方镜像地址
+    image: docker.n8n.io/n8nio/n8n  # Using official image
     container_name: n8n
     restart: always
     ports:
       - "5678:5678"
     environment:
-      # 时区设置
+      # Timezone setting
       - GENERIC_TIMEZONE=Asia/Shanghai
 
-      # 主机和端口配置
+      # Host and port configuration
       - N8N_HOST=host.docker.internal
       - N8N_PORT=5678
       - N8N_PROTOCOL=http
 
-      # Webhook 配置
+      # Webhook configuration
       - WEBHOOK_URL=http://host.docker.internal:5678
       - N8N_EDITOR_BASE_URL=http://host.docker.internal:5678
 
-      # 数据库配置 (可选，如果需要使用 PostgreSQL)
+      # Database configuration (optional, if PostgreSQL is needed)
       # - DB_TYPE=postgresdb
       # - DB_POSTGRESDB_HOST=db
       # - DB_POSTGRESDB_PORT=5432
@@ -198,48 +208,47 @@ services:
       # - DB_POSTGRESDB_USER=dify
       # - DB_POSTGRESDB_PASSWORD=dify123456
 
-      # 基本认证 (可选)
+      # Basic authentication (optional)
       # - N8N_BASIC_AUTH_ACTIVE=true
       # - N8N_BASIC_AUTH_USER=admin
       # - N8N_BASIC_AUTH_PASSWORD=admin123456
     volumes:
-      # 使用外部卷保护现有数据
+      # Use external volume to protect existing data
       - n8n_data:/home/node/.n8n
 
-      # 本地文件映射 (根据需要调整路径)
-      # Windows 示例: - D:/n8n-local-files:/tmp/
-      # Linux/Mac 示例: - ./n8n-local-files:/tmp/
+      # Local file mapping (adjust as needed)
+      # Windows example: - D:/n8n-local-files:/tmp/
+      # Linux/Mac example: - ./n8n-local-files:/tmp/
       # - ./n8n-local-files:/tmp/
     depends_on:
-      - db  # 如果使用 PostgreSQL 数据库
-
-  # Plugin Daemon 服务 (插件管理守护进程)
+      - db  # If using PostgreSQL database
+  # Plugin Daemon Service (plugin management daemon)
   plugin_daemon:
     image: langgenius/dify-plugin-daemon:0.1.2-local
     restart: always
     environment:
-      # 数据库配置
+      # Database configuration
       DB_HOST: db
       DB_PORT: 5432
       DB_USERNAME: dify
       DB_PASSWORD: dify123456
       DB_DATABASE: dify_plugin
       
-      # Redis 配置
+      # Redis configuration
       REDIS_HOST: redis
       REDIS_PORT: 6379
       REDIS_PASSWORD: dify123456
       REDIS_DB: 3
       
-      # 服务配置
+      # Service configuration
       SERVER_PORT: 5002
       SERVER_KEY: lYkiYYT6owG+71oLerGzA7GXCgOT++6ovaezWAjpCjf+Sjc3ZtU+qUEi
       
-      # Dify API 连接配置
+      # Dify API connection configuration
       DIFY_INNER_API_URL: http://api:5001
       DIFY_INNER_API_KEY: QaHbTe77CtuXmsfyhR7+vRjI/+XbV1AaFy691iy+kGDv2Jvy0/eAh8Y1
       
-      # 插件配置
+      # Plugin configuration
       MAX_PLUGIN_PACKAGE_SIZE: 52428800
       PLUGIN_REMOTE_INSTALLING_HOST: 0.0.0.0
       PLUGIN_REMOTE_INSTALLING_PORT: 5003
@@ -258,7 +267,7 @@ services:
     ports:
       - "5002:5002"
 
-  # Nginx 反向代理
+  # Nginx Reverse Proxy
   nginx:
     image: nginx:alpine
     restart: always
@@ -272,14 +281,13 @@ services:
       - "80:80"
 
 volumes:
-  # 新创建的卷
+  # Newly created volumes
   db_data:
   redis_data:
   weaviate_data:
   app_storage:
   plugin_storage:
 
-  # n8n 数据卷 - 使用外部卷保护现有数据
+  # n8n data - using external volume to protect existing data
   n8n_data:
-    external: true  # 标记为外部卷，保护现有数据
-
+    external: true  # Marked as external volume to protect existing data
