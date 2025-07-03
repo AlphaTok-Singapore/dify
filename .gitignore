@@ -222,3 +222,34 @@ mise.toml
 *.tmp
 *.swp
 temp/
+
+# AlphaMind-Dify specific excludes
+# Temporary scripts and fix tools
+Fix-*.ps1
+Fix-*.bat
+*.ps1
+*.bat
+rebuild-*.ps1
+Update-*.ps1
+clean-install.ps1
+install-as-admin.ps1
+
+# Temp directories and files
+temp/
+.env.new
+*.bak
+*.bak.*
+backups/
+web/backups/
+
+# Docker fix scripts
+docker/*/fix-*.sh
+web/docker/fix-*.sh
+
+# Next.js backup files
+web/next.config.js.new
+web/package.json.bak*
+
+# Test and development utilities
+migration_content.py
+api/fix_logging.py

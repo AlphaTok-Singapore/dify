@@ -25,7 +25,8 @@ export function middleware(request: NextRequest) {
     return wrapResponseWithXFrameOptions(response, pathname)
 
   const whiteList = `${process.env.NEXT_PUBLIC_CSP_WHITELIST} ${NECESSARY_DOMAIN}`
-  const nonce = Buffer.from(crypto.randomUUID()).toString('base64')
+  // Generate nonce using Math.random() which is available in Edge Runtime
+  const nonce = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
   const csp = `'nonce-${nonce}'`
 
   const scheme_source = 'data: mediastream: blob: filesystem:'

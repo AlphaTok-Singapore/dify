@@ -12,8 +12,8 @@ const nextConfig = {
   async rewrites() {
     return [
       {
-        source: '/alphamind/:path*',
-        destination: '/alphamind/:path*',
+        source: '/api/alphamind/:path*',
+        destination: 'http://localhost:5100/api/:path*',
       },
       {
         source: '/api/:path*',

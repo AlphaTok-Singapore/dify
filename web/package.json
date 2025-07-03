@@ -18,7 +18,7 @@
     "and_qq >= 14.9"
   ],
   "scripts": {
-    "dev": "cross-env NODE_OPTIONS='--inspect' next dev",
+    "dev": "cross-env NODE_ENV=development NODE_OPTIONS='--inspect' next dev",
     "build": "next build",
     "start": "cp -r .next/static .next/standalone/.next/static && cp -r public .next/standalone/public && cross-env PORT=$npm_config_port HOSTNAME=$npm_config_host node .next/standalone/server.js",
     "lint": "pnpm eslint --cache --cache-location node_modules/.cache/eslint/.eslint-cache",
@@ -181,8 +181,8 @@
     "@types/negotiator": "^0.6.3",
     "@types/node": "18.15.0",
     "@types/qs": "^6.9.16",
-    "@types/react": "19.0.11",
-    "@types/react-dom": "19.0.4",
+    "@types/react": "18.2.0",
+    "@types/react-dom": "18.2.0",
     "@types/react-slider": "^1.3.6",
     "@types/react-syntax-highlighter": "^15.5.13",
     "@types/react-window": "^1.8.8",
@@ -230,8 +230,8 @@
     ]
   },
   "overrides": {
-    "@types/react": "19.0.11",
-    "@types/react-dom": "19.0.4",
+    "@types/react": "18.2.0",
+    "@types/react-dom": "18.2.0",
     "@storybook/test": "8.5.0"
   },
   "pnpm": {

@@ -1,17 +1,20 @@
+# AlphaMind-Dify docker-compose file
+# Environment variables are loaded from .env file in the same directory
+
 services:
   # PostgreSQL Database
   db:
     image: postgres:15-alpine
     restart: always
     environment:
-      POSTGRES_DB: dify
-      POSTGRES_USER: dify
-      POSTGRES_PASSWORD: dify123456
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - db_data:/var/lib/postgresql/data
       - ./docker/db/init:/docker-entrypoint-initdb.d
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "dify"]
+      test: ["CMD", "pg_isready", "-U", "${POSTGRES_USER}"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -20,11 +23,11 @@ services:
   redis:
     image: redis:7-alpine
     restart: always
-    command: redis-server --requirepass dify123456
+    command: redis-server --requirepass ${REDIS_PASSWORD}
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -60,9 +63,9 @@ services:
       MODE: api
       LOG_LEVEL: INFO
       SECRET_KEY: ${SECRET_KEY}
-      DATABASE_URL: postgresql://dify:dify123456@db:5432/dify
-      REDIS_URL: redis://:dify123456@redis:6379/0
-      CELERY_BROKER_URL: redis://:dify123456@redis:6379/1
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      CELERY_BROKER_URL: ${CELERY_BROKER_URL}
       WEB_API_CORS_ALLOW_ORIGINS: '*'
       CONSOLE_CORS_ALLOW_ORIGINS: '*'
       CONSOLE_WEB_URL: ''
@@ -102,9 +105,9 @@ services:
       MODE: worker
       LOG_LEVEL: INFO
       SECRET_KEY: ${SECRET_KEY}
-      DATABASE_URL: postgresql://dify:dify123456@db:5432/dify
-      REDIS_URL: redis://:dify123456@redis:6379/0
-      CELERY_BROKER_URL: redis://:dify123456@redis:6379/1
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      CELERY_BROKER_URL: ${CELERY_BROKER_URL}
       VECTOR_STORE: ${VECTOR_STORE}
       WEAVIATE_ENDPOINT: http://weaviate:8080
       WEAVIATE_API_KEY: WVF5YThaHlkYwhGUSmCRgsX3tD5ngdN8pkih
@@ -137,7 +140,7 @@ services:
     depends_on:
       - api
     ports:
-      - "3000:3000"
+      - "3006:3000"
 
   # AlphaMind API Service
   alphamind-api:
@@ -146,9 +149,9 @@ services:
       dockerfile: Dockerfile
     restart: always
     environment:
-      ALPHAMIND_JWT_SECRET_KEY: ${ALPHAMIND_JWT_SECRET_KEY}
-      DATABASE_URL: postgresql://dify:dify123456@db:5432/dify
-      REDIS_URL: redis://:dify123456@redis:6379/2
+      ALPHAMIND_JWT_SECRET_KEY: ${SECRET_KEY}
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/2
       DIFY_API_URL: http://api:5001
       N8N_API_URL: http://n8n:5678
       JWT_SECRET_KEY: ${SECRET_KEY}
@@ -228,16 +231,16 @@ services:
     restart: always
     environment:
       # Database configuration
-      DB_HOST: db
-      DB_PORT: 5432
-      DB_USERNAME: dify
-      DB_PASSWORD: dify123456
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_USERNAME: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
       DB_DATABASE: dify_plugin
       
       # Redis configuration
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      REDIS_PASSWORD: dify123456
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
       REDIS_DB: 3
       
       # Service configuration
