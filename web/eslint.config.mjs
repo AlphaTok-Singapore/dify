@@ -38,7 +38,7 @@ export default combine(
       'style/brace-style': ['error', 'stroustrup', { allowSingleLine: true }],
       'style/dot-location': ['error', 'property'],
       'style/object-curly-newline': ['error', { consistent: true, multiline: true }],
-      'style/object-property-newline': ['error', { allowMultiplePropertiesPerLine: true }],
+      'style/object-property-newline': ['error', { allowAllPropertiesOnSameLine: true }],
       'style/template-curly-spacing': ['error', 'never'],
       'style/keyword-spacing': 'off',
 
@@ -176,6 +176,8 @@ export default combine(
       // others
       'sonarjs/todo-tag': 'warn',
       'sonarjs/table-header': 'off',
+      // 关闭 http 协议检测，避免开发被阻断
+      'sonarjs/no-clear-text-protocols': 'off',
     },
     plugins: {
       sonarjs: sonar,

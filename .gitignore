@@ -253,3 +253,5 @@ web/package.json.bak*
 # Test and development utilities
 migration_content.py
 api/fix_logging.py
+
+node_modules/

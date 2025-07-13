@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
-export interface GeneralSettings {
+export type GeneralSettings = {
   theme: 'light' | 'dark' | 'system'
   language: string
   timezone: string
@@ -11,7 +11,7 @@ export interface GeneralSettings {
   defaultModel: string
 }
 
-export interface IntegrationSettings {
+export type IntegrationSettings = {
   dify: {
     enabled: boolean
     apiUrl: string
@@ -33,7 +33,7 @@ export interface IntegrationSettings {
   }
 }
 
-export interface SocialMediaSettings {
+export type SocialMediaSettings = {
   autoPost: boolean
   platforms: {
     twitter: { enabled: boolean; accessToken?: string }
@@ -42,27 +42,27 @@ export interface SocialMediaSettings {
   }
 }
 
-export interface SecuritySettings {
+export type SecuritySettings = {
   twoFactorAuth: boolean
   sessionTimeout: number
   ipWhitelist: string[]
   apiRateLimit: number
 }
 
-export interface AllSettings {
+export type AllSettings = {
   general: GeneralSettings
   integrations: IntegrationSettings
   socialMedia: SocialMediaSettings
   security: SecuritySettings
 }
 
-export interface UseSettingsOptions {
+export type UseSettingsOptions = {
   apiUrl?: string
   onError?: (error: Error) => void
   onSettingsChanged?: (settings: AllSettings) => void
 }
 
-export interface UseSettingsReturn {
+export type UseSettingsReturn = {
   settings: AllSettings
   isLoading: boolean
   error: string | null
@@ -84,50 +84,50 @@ const defaultSettings: AllSettings = {
     timezone: 'UTC',
     notifications: true,
     autoSave: true,
-    defaultModel: 'gpt-3.5-turbo'
+    defaultModel: 'gpt-3.5-turbo',
   },
   integrations: {
     dify: {
       enabled: false,
       apiUrl: 'http://localhost:5001',
-      apiKey: ''
+      apiKey: '',
     },
     n8n: {
       enabled: false,
       apiUrl: 'http://localhost:5678',
-      webhookUrl: 'http://localhost:5678/webhook'
+      webhookUrl: 'http://localhost:5678/webhook',
     },
     openai: {
       enabled: false,
       apiKey: '',
-      model: 'gpt-3.5-turbo'
+      model: 'gpt-3.5-turbo',
     },
     anthropic: {
       enabled: false,
-      apiKey: ''
-    }
+      apiKey: '',
+    },
   },
   socialMedia: {
     autoPost: false,
     platforms: {
       twitter: { enabled: false },
       linkedin: { enabled: false },
-      facebook: { enabled: false }
-    }
+      facebook: { enabled: false },
+    },
   },
   security: {
     twoFactorAuth: false,
     sessionTimeout: 3600,
     ipWhitelist: [],
-    apiRateLimit: 100
-  }
+    apiRateLimit: 100,
+  },
 }
 
 export function useSettings(options: UseSettingsOptions = {}): UseSettingsReturn {
-  const { 
-    apiUrl = '/api/settings', 
+  const {
+    apiUrl = '/api/settings',
     onError,
-    onSettingsChanged 
+    onSettingsChanged,
   } = options
 
   const [settings, setSettings] = useState<AllSettings>(defaultSettings)
@@ -151,26 +151,27 @@ export function useSettings(options: UseSettingsOptions = {}): UseSettingsReturn
 
     try {
       const response = await fetch(apiUrl)
-      if (!response.ok) {
+      if (!response.ok)
         throw new Error(`Failed to fetch settings: ${response.status}`)
-      }
 
       const data = await response.json()
       const loadedSettings = { ...defaultSettings, ...data.settings }
       setSettings(loadedSettings)
       onSettingsChanged?.(loadedSettings)
-    } catch (err) {
+    }
+ catch (err) {
       handleError(err)
       // Use default settings for development
       setSettings(defaultSettings)
-    } finally {
+    }
+ finally {
       setIsLoading(false)
     }
   }, [apiUrl, handleError, onSettingsChanged])
 
   const updateSettings = useCallback(async (
     section: keyof AllSettings,
-    updates: any
+    updates: any,
   ) => {
     setIsLoading(true)
     setError(null)
@@ -179,31 +180,32 @@ export function useSettings(options: UseSettingsOptions = {}): UseSettingsReturn
       const response = await fetch(`${apiUrl}/${section}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updates)
+        body: JSON.stringify(updates),
       })
 
-      if (!response.ok) {
+      if (!response.ok)
         throw new Error(`Failed to update ${section} settings: ${response.status}`)
-      }
 
       const updatedSection = await response.json()
       const newSettings = {
         ...settings,
-        [section]: { ...settings[section], ...updatedSection }
+        [section]: { ...settings[section], ...updatedSection },
       }
-      
+
       setSettings(newSettings)
       onSettingsChanged?.(newSettings)
-    } catch (err) {
+    }
+ catch (err) {
       handleError(err)
       // Update locally for development
       const newSettings = {
         ...settings,
-        [section]: { ...settings[section], ...updates }
+        [section]: { ...settings[section], ...updates },
       }
       setSettings(newSettings)
       onSettingsChanged?.(newSettings)
-    } finally {
+    }
+ finally {
       setIsLoading(false)
     }
   }, [apiUrl, settings, handleError, onSettingsChanged])
@@ -231,16 +233,16 @@ export function useSettings(options: UseSettingsOptions = {}): UseSettingsReturn
       const response = await fetch(`${apiUrl}/integrations/${type}/test`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(settings.integrations[type])
+        body: JSON.stringify(settings.integrations[type]),
       })
 
-      if (!response.ok) {
+      if (!response.ok)
         throw new Error(`Integration test failed: ${response.status}`)
-      }
 
       const result = await response.json()
       return result.success
-    } catch (err) {
+    }
+ catch (err) {
       handleError(err)
       // Return mock result for development
       return Math.random() > 0.3 // 70% success rate for testing
@@ -255,36 +257,39 @@ export function useSettings(options: UseSettingsOptions = {}): UseSettingsReturn
       const url = section ? `${apiUrl}/${section}/reset` : `${apiUrl}/reset`
       const response = await fetch(url, { method: 'POST' })
 
-      if (!response.ok) {
+      if (!response.ok)
         throw new Error(`Failed to reset settings: ${response.status}`)
-      }
 
       if (section) {
         const newSettings = {
           ...settings,
-          [section]: defaultSettings[section]
+          [section]: defaultSettings[section],
         }
         setSettings(newSettings)
         onSettingsChanged?.(newSettings)
-      } else {
+      }
+ else {
         setSettings(defaultSettings)
         onSettingsChanged?.(defaultSettings)
       }
-    } catch (err) {
+    }
+ catch (err) {
       handleError(err)
       // Reset locally for development
       if (section) {
         const newSettings = {
           ...settings,
-          [section]: defaultSettings[section]
+          [section]: defaultSettings[section],
         }
         setSettings(newSettings)
         onSettingsChanged?.(newSettings)
-      } else {
+      }
+ else {
         setSettings(defaultSettings)
         onSettingsChanged?.(defaultSettings)
       }
-    } finally {
+    }
+ finally {
       setIsLoading(false)
     }
   }, [apiUrl, settings, handleError, onSettingsChanged])
@@ -299,38 +304,40 @@ export function useSettings(options: UseSettingsOptions = {}): UseSettingsReturn
 
     try {
       const importedSettings = JSON.parse(settingsJson)
-      
+
       // Validate imported settings structure
       const validatedSettings = { ...defaultSettings, ...importedSettings }
-      
+
       const response = await fetch(`${apiUrl}/import`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(validatedSettings)
+        body: JSON.stringify(validatedSettings),
       })
 
-      if (!response.ok) {
+      if (!response.ok)
         throw new Error(`Failed to import settings: ${response.status}`)
-      }
 
       setSettings(validatedSettings)
       onSettingsChanged?.(validatedSettings)
-    } catch (err) {
-      if (err instanceof SyntaxError) {
+    }
+ catch (err) {
+      if (err instanceof SyntaxError)
         handleError(new Error('Invalid JSON format'))
-      } else {
+       else
         handleError(err)
-      }
+
       // For development, still try to parse and use valid parts
       try {
         const importedSettings = JSON.parse(settingsJson)
         const validatedSettings = { ...defaultSettings, ...importedSettings }
         setSettings(validatedSettings)
         onSettingsChanged?.(validatedSettings)
-      } catch {
+      }
+ catch {
         // Ignore if JSON is completely invalid
       }
-    } finally {
+    }
+ finally {
       setIsLoading(false)
     }
   }, [apiUrl, handleError, onSettingsChanged])
@@ -347,7 +354,6 @@ export function useSettings(options: UseSettingsOptions = {}): UseSettingsReturn
     resetSettings,
     exportSettings,
     importSettings,
-    refreshSettings
+    refreshSettings,
   }
 }
-

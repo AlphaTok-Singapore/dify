@@ -1,12 +1,12 @@
 'use client'
 
-import React, { useState, useCallback } from 'react'
-import { Upload, FileText, Database, Download, Trash2, Eye } from 'lucide-react'
+import React, { useCallback, useState } from 'react'
+import { Database, Download, Eye, FileText, Trash2, Upload } from 'lucide-react'
 import { Button } from '../ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/Table'
 
-interface DataFile {
+type DataFile = {
   id: string
   name: string
   type: string
@@ -16,7 +16,7 @@ interface DataFile {
   processedAt?: Date
 }
 
-interface DataProcessorProps {
+type DataProcessorProps = {
   onFileUpload?: (files: File[]) => void
   onFileDelete?: (fileId: string) => void
   onFileProcess?: (fileId: string) => void
@@ -27,7 +27,7 @@ const DataProcessor: React.FC<DataProcessorProps> = ({
   onFileUpload,
   onFileDelete,
   onFileProcess,
-  className
+  className,
 }) => {
   const [files, setFiles] = useState<DataFile[]>([
     {
@@ -37,7 +37,7 @@ const DataProcessor: React.FC<DataProcessorProps> = ({
       size: 1024000,
       status: 'completed',
       uploadedAt: new Date(Date.now() - 86400000),
-      processedAt: new Date(Date.now() - 86400000 + 3600000)
+      processedAt: new Date(Date.now() - 86400000 + 3600000),
     },
     {
       id: '2',
@@ -45,20 +45,53 @@ const DataProcessor: React.FC<DataProcessorProps> = ({
       type: 'application/pdf',
       size: 2048000,
       status: 'processing',
-      uploadedAt: new Date(Date.now() - 3600000)
-    }
+      uploadedAt: new Date(Date.now() - 3600000),
+    },
   ])
 
   const [dragActive, setDragActive] = useState(false)
 
+  // 将 handleFiles 的定义提前到首次使用之前
+  const handleFiles = (fileList: File[]) => {
+    const newFiles: DataFile[] = fileList.map(file => ({
+      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+      name: file.name,
+      type: file.type,
+      size: file.size,
+      status: 'uploading',
+      uploadedAt: new Date(),
+    }))
+
+    setFiles(prev => [...prev, ...newFiles])
+    onFileUpload?.(fileList)
+
+    // Simulate upload and processing
+    newFiles.forEach((file) => {
+      setTimeout(() => {
+        setFiles(prev => prev.map(f =>
+          f.id === file.id ? { ...f, status: 'processing' } : f,
+        ))
+
+        setTimeout(() => {
+          setFiles(prev => prev.map(f =>
+            f.id === file.id ? {
+              ...f,
+              status: 'completed',
+              processedAt: new Date(),
+            } : f,
+          ))
+        }, 2000)
+      }, 1000)
+    })
+  }
+
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    if (e.type === 'dragenter' || e.type === 'dragover') {
+    if (e.type === 'dragenter' || e.type === 'dragover')
       setDragActive(true)
-    } else if (e.type === 'dragleave') {
+     else if (e.type === 'dragleave')
       setDragActive(false)
-    }
   }, [])
 
   const handleDrop = useCallback((e: React.DragEvent) => {
@@ -71,39 +104,6 @@ const DataProcessor: React.FC<DataProcessorProps> = ({
       handleFiles(droppedFiles)
     }
   }, [])
-
-  const handleFiles = (fileList: File[]) => {
-    const newFiles: DataFile[] = fileList.map(file => ({
-      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-      name: file.name,
-      type: file.type,
-      size: file.size,
-      status: 'uploading',
-      uploadedAt: new Date()
-    }))
-
-    setFiles(prev => [...prev, ...newFiles])
-    onFileUpload?.(fileList)
-
-    // Simulate upload and processing
-    newFiles.forEach(file => {
-      setTimeout(() => {
-        setFiles(prev => prev.map(f => 
-          f.id === file.id ? { ...f, status: 'processing' } : f
-        ))
-        
-        setTimeout(() => {
-          setFiles(prev => prev.map(f => 
-            f.id === file.id ? { 
-              ...f, 
-              status: 'completed', 
-              processedAt: new Date() 
-            } : f
-          ))
-        }, 2000)
-      }, 1000)
-    })
-  }
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -118,8 +118,8 @@ const DataProcessor: React.FC<DataProcessorProps> = ({
   }
 
   const processFile = (fileId: string) => {
-    setFiles(prev => prev.map(f => 
-      f.id === fileId ? { ...f, status: 'processing' } : f
+    setFiles(prev => prev.map(f =>
+      f.id === fileId ? { ...f, status: 'processing' } : f,
     ))
     onFileProcess?.(fileId)
   }
@@ -129,7 +129,7 @@ const DataProcessor: React.FC<DataProcessorProps> = ({
     const k = 1024
     const sizes = ['Bytes', 'KB', 'MB', 'GB']
     const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+    return `${Number.parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`
   }
 
   const getStatusColor = (status: DataFile['status']) => {
@@ -163,9 +163,9 @@ const DataProcessor: React.FC<DataProcessorProps> = ({
       <CardContent className="space-y-6">
         {/* Upload Area */}
         <div
-          className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
-            dragActive 
-              ? 'border-blue-500 bg-blue-50' 
+          className={`rounded-lg border-2 border-dashed p-8 text-center transition-colors ${
+            dragActive
+              ? 'border-blue-500 bg-blue-50'
               : 'border-gray-300 hover:border-gray-400'
           }`}
           onDragEnter={handleDrag}
@@ -173,11 +173,11 @@ const DataProcessor: React.FC<DataProcessorProps> = ({
           onDragOver={handleDrag}
           onDrop={handleDrop}
         >
-          <Upload className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
+          <Upload className="mx-auto mb-4 h-12 w-12 text-gray-400" />
+          <h3 className="mb-2 text-lg font-medium text-gray-900">
             Upload your data files
           </h3>
-          <p className="text-gray-600 mb-4">
+          <p className="mb-4 text-gray-600">
             Drag and drop files here, or click to select files
           </p>
           <input
@@ -193,7 +193,7 @@ const DataProcessor: React.FC<DataProcessorProps> = ({
               Select Files
             </Button>
           </label>
-          <p className="text-sm text-gray-500 mt-2">
+          <p className="mt-2 text-sm text-gray-500">
             Supported formats: CSV, JSON, TXT, PDF, DOCX
           </p>
         </div>
@@ -201,7 +201,7 @@ const DataProcessor: React.FC<DataProcessorProps> = ({
         {/* Files Table */}
         {files.length > 0 && (
           <div>
-            <h3 className="text-lg font-medium mb-4">Uploaded Files</h3>
+            <h3 className="mb-4 text-lg font-medium">Uploaded Files</h3>
             <Table>
               <TableHeader>
                 <TableRow>
@@ -213,7 +213,7 @@ const DataProcessor: React.FC<DataProcessorProps> = ({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {files.map((file) => (
+                {files.map(file => (
                   <TableRow key={file.id}>
                     <TableCell className="flex items-center gap-2">
                       <FileText className="h-4 w-4" />
@@ -236,8 +236,8 @@ const DataProcessor: React.FC<DataProcessorProps> = ({
                         <Button size="sm" variant="ghost">
                           <Download className="h-4 w-4" />
                         </Button>
-                        <Button 
-                          size="sm" 
+                        <Button
+                          size="sm"
                           variant="ghost"
                           onClick={() => deleteFile(file.id)}
                         >
@@ -257,4 +257,3 @@ const DataProcessor: React.FC<DataProcessorProps> = ({
 }
 
 export { DataProcessor, type DataProcessorProps, type DataFile }
-

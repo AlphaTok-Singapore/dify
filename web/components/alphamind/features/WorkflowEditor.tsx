@@ -1,12 +1,12 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Play, Save, Plus, Trash2, Settings, GitBranch } from 'lucide-react'
+import { GitBranch, Play, Plus, Save, Settings, Trash2 } from 'lucide-react'
 import { Button } from '../ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card'
-import { Form, FormField, FormLabel, FormInput, FormSelect } from '../ui/Form'
+import { Form, FormField, FormInput, FormLabel, FormSelect } from '../ui/Form'
 
-interface WorkflowNode {
+type WorkflowNode = {
   id: string
   type: 'trigger' | 'action' | 'condition' | 'output'
   name: string
@@ -14,13 +14,13 @@ interface WorkflowNode {
   position: { x: number; y: number }
 }
 
-interface WorkflowConnection {
+type WorkflowConnection = {
   id: string
   from: string
   to: string
 }
 
-interface Workflow {
+type Workflow = {
   id: string
   name: string
   description: string
@@ -29,7 +29,7 @@ interface Workflow {
   status: 'draft' | 'active' | 'paused'
 }
 
-interface WorkflowEditorProps {
+type WorkflowEditorProps = {
   workflow?: Workflow
   onSave?: (workflow: Workflow) => void
   onExecute?: (workflow: Workflow) => void
@@ -40,7 +40,7 @@ const WorkflowEditor: React.FC<WorkflowEditorProps> = ({
   workflow,
   onSave,
   onExecute,
-  className
+  className,
 }) => {
   const [currentWorkflow, setCurrentWorkflow] = useState<Workflow>(
     workflow || {
@@ -53,29 +53,29 @@ const WorkflowEditor: React.FC<WorkflowEditorProps> = ({
           type: 'trigger',
           name: 'HTTP Trigger',
           config: { method: 'POST', path: '/webhook' },
-          position: { x: 100, y: 100 }
+          position: { x: 100, y: 100 },
         },
         {
           id: '2',
           type: 'action',
           name: 'Process Data',
           config: { operation: 'transform' },
-          position: { x: 300, y: 100 }
+          position: { x: 300, y: 100 },
         },
         {
           id: '3',
           type: 'output',
           name: 'Send Response',
           config: { format: 'json' },
-          position: { x: 500, y: 100 }
-        }
+          position: { x: 500, y: 100 },
+        },
       ],
       connections: [
         { id: 'c1', from: '1', to: '2' },
-        { id: 'c2', from: '2', to: '3' }
+        { id: 'c2', from: '2', to: '3' },
       ],
-      status: 'draft'
-    }
+      status: 'draft',
+    },
   )
 
   const [selectedNode, setSelectedNode] = useState<WorkflowNode | null>(null)
@@ -84,7 +84,7 @@ const WorkflowEditor: React.FC<WorkflowEditorProps> = ({
     { value: 'trigger', label: 'Trigger', icon: '🚀' },
     { value: 'action', label: 'Action', icon: '⚡' },
     { value: 'condition', label: 'Condition', icon: '🔀' },
-    { value: 'output', label: 'Output', icon: '📤' }
+    { value: 'output', label: 'Output', icon: '📤' },
   ]
 
   const addNode = (type: WorkflowNode['type']) => {
@@ -93,12 +93,12 @@ const WorkflowEditor: React.FC<WorkflowEditorProps> = ({
       type,
       name: `New ${type}`,
       config: {},
-      position: { x: 200, y: 200 }
+      position: { x: 200, y: 200 },
     }
 
     setCurrentWorkflow(prev => ({
       ...prev,
-      nodes: [...prev.nodes, newNode]
+      nodes: [...prev.nodes, newNode],
     }))
   }
 
@@ -106,7 +106,7 @@ const WorkflowEditor: React.FC<WorkflowEditorProps> = ({
     setCurrentWorkflow(prev => ({
       ...prev,
       nodes: prev.nodes.filter(n => n.id !== nodeId),
-      connections: prev.connections.filter(c => c.from !== nodeId && c.to !== nodeId)
+      connections: prev.connections.filter(c => c.from !== nodeId && c.to !== nodeId),
     }))
     setSelectedNode(null)
   }
@@ -114,9 +114,9 @@ const WorkflowEditor: React.FC<WorkflowEditorProps> = ({
   const updateNode = (nodeId: string, updates: Partial<WorkflowNode>) => {
     setCurrentWorkflow(prev => ({
       ...prev,
-      nodes: prev.nodes.map(n => 
-        n.id === nodeId ? { ...n, ...updates } : n
-      )
+      nodes: prev.nodes.map(n =>
+        n.id === nodeId ? { ...n, ...updates } : n,
+      ),
     }))
   }
 
@@ -139,7 +139,7 @@ const WorkflowEditor: React.FC<WorkflowEditorProps> = ({
   }
 
   return (
-    <div className={`grid grid-cols-1 lg:grid-cols-3 gap-6 ${className}`}>
+    <div className={`grid grid-cols-1 gap-6 lg:grid-cols-3 ${className}`}>
       {/* Workflow Canvas */}
       <div className="lg:col-span-2">
         <Card>
@@ -151,11 +151,11 @@ const WorkflowEditor: React.FC<WorkflowEditorProps> = ({
               </CardTitle>
               <div className="flex gap-2">
                 <Button variant="outline" onClick={handleSave}>
-                  <Save className="h-4 w-4 mr-2" />
+                  <Save className="mr-2 h-4 w-4" />
                   Save
                 </Button>
                 <Button onClick={handleExecute}>
-                  <Play className="h-4 w-4 mr-2" />
+                  <Play className="mr-2 h-4 w-4" />
                   Execute
                 </Button>
               </div>
@@ -163,17 +163,17 @@ const WorkflowEditor: React.FC<WorkflowEditorProps> = ({
           </CardHeader>
           <CardContent>
             {/* Canvas Area */}
-            <div className="relative bg-gray-50 rounded-lg p-4 min-h-96 border-2 border-dashed border-gray-300">
+            <div className="relative min-h-96 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-4">
               {/* Nodes */}
-              {currentWorkflow.nodes.map((node) => (
+              {currentWorkflow.nodes.map(node => (
                 <div
                   key={node.id}
-                  className={`absolute p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                  className={`absolute cursor-pointer rounded-lg border-2 p-3 transition-all ${
                     getNodeColor(node.type)
                   } ${selectedNode?.id === node.id ? 'ring-2 ring-blue-500' : ''}`}
                   style={{
                     left: node.position.x,
-                    top: node.position.y
+                    top: node.position.y,
                   }}
                   onClick={() => setSelectedNode(node)}
                 >
@@ -182,19 +182,19 @@ const WorkflowEditor: React.FC<WorkflowEditorProps> = ({
                       {nodeTypes.find(t => t.value === node.type)?.icon}
                     </span>
                     <div>
-                      <div className="font-medium text-sm">{node.name}</div>
-                      <div className="text-xs text-gray-600 capitalize">{node.type}</div>
+                      <div className="text-sm font-medium">{node.name}</div>
+                      <div className="text-xs capitalize text-gray-600">{node.type}</div>
                     </div>
                   </div>
                 </div>
               ))}
 
               {/* Connections */}
-              <svg className="absolute inset-0 pointer-events-none">
+              <svg className="pointer-events-none absolute inset-0">
                 {currentWorkflow.connections.map((connection) => {
                   const fromNode = currentWorkflow.nodes.find(n => n.id === connection.from)
                   const toNode = currentWorkflow.nodes.find(n => n.id === connection.to)
-                  
+
                   if (!fromNode || !toNode) return null
 
                   return (
@@ -229,15 +229,15 @@ const WorkflowEditor: React.FC<WorkflowEditorProps> = ({
             </div>
 
             {/* Add Node Buttons */}
-            <div className="flex gap-2 mt-4">
-              {nodeTypes.map((type) => (
+            <div className="mt-4 flex gap-2">
+              {nodeTypes.map(type => (
                 <Button
                   key={type.value}
                   variant="outline"
                   size="sm"
                   onClick={() => addNode(type.value as WorkflowNode['type'])}
                 >
-                  <Plus className="h-4 w-4 mr-1" />
+                  <Plus className="mr-1 h-4 w-4" />
                   {type.icon} {type.label}
                 </Button>
               ))}
@@ -262,7 +262,7 @@ const WorkflowEditor: React.FC<WorkflowEditorProps> = ({
                   <FormLabel>Node Name</FormLabel>
                   <FormInput
                     value={selectedNode.name}
-                    onChange={(e) => updateNode(selectedNode.id, { name: e.target.value })}
+                    onChange={e => updateNode(selectedNode.id, { name: e.target.value })}
                   />
                 </FormField>
 
@@ -270,9 +270,9 @@ const WorkflowEditor: React.FC<WorkflowEditorProps> = ({
                   <FormLabel>Node Type</FormLabel>
                   <FormSelect
                     value={selectedNode.type}
-                    onChange={(e) => updateNode(selectedNode.id, { type: e.target.value as WorkflowNode['type'] })}
+                    onChange={e => updateNode(selectedNode.id, { type: e.target.value as WorkflowNode['type'] })}
                   >
-                    {nodeTypes.map((type) => (
+                    {nodeTypes.map(type => (
                       <option key={type.value} value={type.value}>
                         {type.icon} {type.label}
                       </option>
@@ -286,8 +286,8 @@ const WorkflowEditor: React.FC<WorkflowEditorProps> = ({
                     <FormLabel>Trigger Method</FormLabel>
                     <FormSelect
                       value={selectedNode.config.method || 'POST'}
-                      onChange={(e) => updateNode(selectedNode.id, {
-                        config: { ...selectedNode.config, method: e.target.value }
+                      onChange={e => updateNode(selectedNode.id, {
+                        config: { ...selectedNode.config, method: e.target.value },
                       })}
                     >
                       <option value="GET">GET</option>
@@ -304,14 +304,14 @@ const WorkflowEditor: React.FC<WorkflowEditorProps> = ({
                     size="sm"
                     onClick={() => deleteNode(selectedNode.id)}
                   >
-                    <Trash2 className="h-4 w-4 mr-2" />
+                    <Trash2 className="mr-2 h-4 w-4" />
                     Delete Node
                   </Button>
                 </div>
               </Form>
             ) : (
-              <div className="text-center text-gray-500 py-8">
-                <Settings className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <div className="py-8 text-center text-gray-500">
+                <Settings className="mx-auto mb-4 h-12 w-12 opacity-50" />
                 <p>Select a node to edit its properties</p>
               </div>
             )}
@@ -323,4 +323,3 @@ const WorkflowEditor: React.FC<WorkflowEditorProps> = ({
 }
 
 export { WorkflowEditor, type WorkflowEditorProps, type Workflow, type WorkflowNode }
-

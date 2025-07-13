@@ -3,39 +3,39 @@
 import React from 'react'
 import { cn } from '@/lib/utils'
 
-interface FormProps extends React.FormHTMLAttributes<HTMLFormElement> {
+type FormProps = {
   children: React.ReactNode
-}
+} & React.FormHTMLAttributes<HTMLFormElement>
 
-interface FormFieldProps {
+type FormFieldProps = {
   children: React.ReactNode
   className?: string
 }
 
-interface FormLabelProps extends React.LabelHTMLAttributes<HTMLLabelElement> {
+type FormLabelProps = {
   children: React.ReactNode
   required?: boolean
-}
+} & React.LabelHTMLAttributes<HTMLLabelElement>
 
-interface FormInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+type FormInputProps = {
   error?: string
-}
+} & React.InputHTMLAttributes<HTMLInputElement>
 
-interface FormTextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+type FormTextareaProps = {
   error?: string
-}
+} & React.TextareaHTMLAttributes<HTMLTextAreaElement>
 
-interface FormSelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
+type FormSelectProps = {
   children: React.ReactNode
   error?: string
-}
+} & React.SelectHTMLAttributes<HTMLSelectElement>
 
-interface FormErrorProps {
+type FormErrorProps = {
   message?: string
   className?: string
 }
 
-interface FormDescriptionProps {
+type FormDescriptionProps = {
   children: React.ReactNode
   className?: string
 }
@@ -47,7 +47,7 @@ const Form = React.forwardRef<HTMLFormElement, FormProps>(
       className={cn('space-y-6', className)}
       {...props}
     />
-  )
+  ),
 )
 Form.displayName = 'Form'
 
@@ -63,14 +63,14 @@ const FormLabel = React.forwardRef<HTMLLabelElement, FormLabelProps>(
       ref={ref}
       className={cn(
         'text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70',
-        className
+        className,
       )}
       {...props}
     >
       {children}
-      {required && <span className="text-red-500 ml-1">*</span>}
+      {required && <span className="ml-1 text-red-500">*</span>}
     </label>
-  )
+  ),
 )
 FormLabel.displayName = 'FormLabel'
 
@@ -79,13 +79,13 @@ const FormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
     <input
       ref={ref}
       className={cn(
-        'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
+        'border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
         error && 'border-red-500 focus-visible:ring-red-500',
-        className
+        className,
       )}
       {...props}
     />
-  )
+  ),
 )
 FormInput.displayName = 'FormInput'
 
@@ -94,13 +94,13 @@ const FormTextarea = React.forwardRef<HTMLTextAreaElement, FormTextareaProps>(
     <textarea
       ref={ref}
       className={cn(
-        'flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
+        'border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex min-h-[80px] w-full rounded-md border px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
         error && 'border-red-500 focus-visible:ring-red-500',
-        className
+        className,
       )}
       {...props}
     />
-  )
+  ),
 )
 FormTextarea.displayName = 'FormTextarea'
 
@@ -109,21 +109,21 @@ const FormSelect = React.forwardRef<HTMLSelectElement, FormSelectProps>(
     <select
       ref={ref}
       className={cn(
-        'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
+        'border-input bg-background ring-offset-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
         error && 'border-red-500 focus-visible:ring-red-500',
-        className
+        className,
       )}
       {...props}
     >
       {children}
     </select>
-  )
+  ),
 )
 FormSelect.displayName = 'FormSelect'
 
 const FormError: React.FC<FormErrorProps> = ({ message, className }) => {
   if (!message) return null
-  
+
   return (
     <p className={cn('text-sm text-red-500', className)}>
       {message}
@@ -132,7 +132,7 @@ const FormError: React.FC<FormErrorProps> = ({ message, className }) => {
 }
 
 const FormDescription: React.FC<FormDescriptionProps> = ({ children, className }) => (
-  <p className={cn('text-sm text-muted-foreground', className)}>
+  <p className={cn('text-muted-foreground text-sm', className)}>
     {children}
   </p>
 )
@@ -153,6 +153,5 @@ export {
   type FormTextareaProps,
   type FormSelectProps,
   type FormErrorProps,
-  type FormDescriptionProps
+  type FormDescriptionProps,
 }
-

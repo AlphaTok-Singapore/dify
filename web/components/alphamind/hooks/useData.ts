@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
-export interface DataFile {
+export type DataFile = {
   id: string
   name: string
   type: string
@@ -14,7 +14,7 @@ export interface DataFile {
   url?: string
 }
 
-export interface Dataset {
+export type Dataset = {
   id: string
   name: string
   description: string
@@ -25,7 +25,7 @@ export interface Dataset {
   updatedAt: Date
 }
 
-export interface KnowledgeBase {
+export type KnowledgeBase = {
   id: string
   name: string
   description: string
@@ -36,13 +36,13 @@ export interface KnowledgeBase {
   updatedAt: Date
 }
 
-export interface UseDataOptions {
+export type UseDataOptions = {
   apiUrl?: string
   onError?: (error: Error) => void
   onUploadProgress?: (progress: number) => void
 }
 
-export interface UseDataReturn {
+export type UseDataReturn = {
   files: DataFile[]
   datasets: Dataset[]
   knowledgeBases: KnowledgeBase[]
@@ -61,10 +61,10 @@ export interface UseDataReturn {
 }
 
 export function useData(options: UseDataOptions = {}): UseDataReturn {
-  const { 
-    apiUrl = '/api/data', 
+  const {
+    apiUrl = '/api/data',
     onError,
-    onUploadProgress 
+    onUploadProgress,
   } = options
 
   const [files, setFiles] = useState<DataFile[]>([])
@@ -93,14 +93,15 @@ export function useData(options: UseDataOptions = {}): UseDataReturn {
       const [filesRes, datasetsRes, kbRes] = await Promise.allSettled([
         fetch(`${apiUrl}/files`),
         fetch(`${apiUrl}/datasets`),
-        fetch(`${apiUrl}/knowledge-bases`)
+        fetch(`${apiUrl}/knowledge-bases`),
       ])
 
       // Handle files
       if (filesRes.status === 'fulfilled' && filesRes.value.ok) {
         const filesData = await filesRes.value.json()
         setFiles(filesData.files || [])
-      } else {
+      }
+ else {
         // Mock data for development
         setFiles([
           {
@@ -110,7 +111,7 @@ export function useData(options: UseDataOptions = {}): UseDataReturn {
             size: 1024000,
             status: 'completed',
             uploadedAt: new Date(Date.now() - 86400000),
-            processedAt: new Date(Date.now() - 86400000 + 3600000)
+            processedAt: new Date(Date.now() - 86400000 + 3600000),
           },
           {
             id: '2',
@@ -118,8 +119,8 @@ export function useData(options: UseDataOptions = {}): UseDataReturn {
             type: 'application/pdf',
             size: 2048000,
             status: 'processing',
-            uploadedAt: new Date(Date.now() - 3600000)
-          }
+            uploadedAt: new Date(Date.now() - 3600000),
+          },
         ])
       }
 
@@ -127,7 +128,8 @@ export function useData(options: UseDataOptions = {}): UseDataReturn {
       if (datasetsRes.status === 'fulfilled' && datasetsRes.value.ok) {
         const datasetsData = await datasetsRes.value.json()
         setDatasets(datasetsData.datasets || [])
-      } else {
+      }
+ else {
         // Mock data for development
         setDatasets([
           {
@@ -138,8 +140,8 @@ export function useData(options: UseDataOptions = {}): UseDataReturn {
             totalSize: 1024000,
             status: 'active',
             createdAt: new Date(Date.now() - 86400000),
-            updatedAt: new Date()
-          }
+            updatedAt: new Date(),
+          },
         ])
       }
 
@@ -147,7 +149,8 @@ export function useData(options: UseDataOptions = {}): UseDataReturn {
       if (kbRes.status === 'fulfilled' && kbRes.value.ok) {
         const kbData = await kbRes.value.json()
         setKnowledgeBases(kbData.knowledgeBases || [])
-      } else {
+      }
+ else {
         // Mock data for development
         setKnowledgeBases([
           {
@@ -158,21 +161,22 @@ export function useData(options: UseDataOptions = {}): UseDataReturn {
             vectorCount: 1500,
             status: 'ready',
             createdAt: new Date(Date.now() - 86400000),
-            updatedAt: new Date()
-          }
+            updatedAt: new Date(),
+          },
         ])
       }
-
-    } catch (err) {
+    }
+ catch (err) {
       handleError(err)
-    } finally {
+    }
+ finally {
       setIsLoading(false)
     }
   }, [apiUrl, handleError])
 
   const uploadFiles = useCallback(async (
-    fileList: File[], 
-    datasetId?: string
+    fileList: File[],
+    datasetId?: string,
   ): Promise<DataFile[]> => {
     setIsLoading(true)
     setError(null)
@@ -183,9 +187,8 @@ export function useData(options: UseDataOptions = {}): UseDataReturn {
       for (const file of fileList) {
         const formData = new FormData()
         formData.append('file', file)
-        if (datasetId) {
+        if (datasetId)
           formData.append('datasetId', datasetId)
-        }
 
         // Create initial file record
         const newFile: DataFile = {
@@ -194,7 +197,7 @@ export function useData(options: UseDataOptions = {}): UseDataReturn {
           type: file.type,
           size: file.size,
           status: 'uploading',
-          uploadedAt: new Date()
+          uploadedAt: new Date(),
         }
 
         setFiles(prev => [...prev, newFile])
@@ -203,47 +206,48 @@ export function useData(options: UseDataOptions = {}): UseDataReturn {
         try {
           const response = await fetch(`${apiUrl}/files/upload`, {
             method: 'POST',
-            body: formData
+            body: formData,
           })
 
-          if (!response.ok) {
+          if (!response.ok)
             throw new Error(`Upload failed: ${response.status}`)
-          }
 
           const result = await response.json()
 
           // Update file status
-          setFiles(prev => prev.map(f => 
-            f.id === newFile.id 
+          setFiles(prev => prev.map(f =>
+            f.id === newFile.id
               ? { ...f, status: 'processing', ...result }
-              : f
+              : f,
           ))
 
           // Simulate processing completion
           setTimeout(() => {
-            setFiles(prev => prev.map(f => 
-              f.id === newFile.id 
+            setFiles(prev => prev.map(f =>
+              f.id === newFile.id
                 ? { ...f, status: 'completed', processedAt: new Date() }
-                : f
+                : f,
             ))
           }, 2000)
-
-        } catch (err) {
+        }
+ catch (err) {
           // Update file status to error
-          setFiles(prev => prev.map(f => 
-            f.id === newFile.id 
+          setFiles(prev => prev.map(f =>
+            f.id === newFile.id
               ? { ...f, status: 'error' }
-              : f
+              : f,
           ))
           throw err
         }
       }
 
       return uploadedFiles
-    } catch (err) {
+    }
+ catch (err) {
       handleError(err)
       return uploadedFiles
-    } finally {
+    }
+ finally {
       setIsLoading(false)
     }
   }, [apiUrl, handleError])
@@ -253,15 +257,15 @@ export function useData(options: UseDataOptions = {}): UseDataReturn {
 
     try {
       const response = await fetch(`${apiUrl}/files/${fileId}`, {
-        method: 'DELETE'
+        method: 'DELETE',
       })
 
-      if (!response.ok) {
+      if (!response.ok)
         throw new Error(`Delete failed: ${response.status}`)
-      }
 
       setFiles(prev => prev.filter(f => f.id !== fileId))
-    } catch (err) {
+    }
+ catch (err) {
       handleError(err)
       // Delete locally for development
       setFiles(prev => prev.filter(f => f.id !== fileId))
@@ -269,8 +273,8 @@ export function useData(options: UseDataOptions = {}): UseDataReturn {
   }, [apiUrl, handleError])
 
   const createDataset = useCallback(async (
-    name: string, 
-    description = ''
+    name: string,
+    description = '',
   ): Promise<Dataset> => {
     setIsLoading(true)
     setError(null)
@@ -279,17 +283,17 @@ export function useData(options: UseDataOptions = {}): UseDataReturn {
       const response = await fetch(`${apiUrl}/datasets`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, description })
+        body: JSON.stringify({ name, description }),
       })
 
-      if (!response.ok) {
+      if (!response.ok)
         throw new Error(`Create dataset failed: ${response.status}`)
-      }
 
       const newDataset = await response.json()
       setDatasets(prev => [...prev, newDataset])
       return newDataset
-    } catch (err) {
+    }
+ catch (err) {
       handleError(err)
       // Create mock dataset for development
       const mockDataset: Dataset = {
@@ -300,18 +304,19 @@ export function useData(options: UseDataOptions = {}): UseDataReturn {
         totalSize: 0,
         status: 'active',
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       }
       setDatasets(prev => [...prev, mockDataset])
       return mockDataset
-    } finally {
+    }
+ finally {
       setIsLoading(false)
     }
   }, [apiUrl, handleError])
 
   const updateDataset = useCallback(async (
-    id: string, 
-    updates: Partial<Dataset>
+    id: string,
+    updates: Partial<Dataset>,
   ): Promise<Dataset> => {
     setError(null)
 
@@ -319,19 +324,19 @@ export function useData(options: UseDataOptions = {}): UseDataReturn {
       const response = await fetch(`${apiUrl}/datasets/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updates)
+        body: JSON.stringify(updates),
       })
 
-      if (!response.ok) {
+      if (!response.ok)
         throw new Error(`Update dataset failed: ${response.status}`)
-      }
 
       const updatedDataset = await response.json()
-      setDatasets(prev => prev.map(d => 
-        d.id === id ? { ...d, ...updatedDataset, updatedAt: new Date() } : d
+      setDatasets(prev => prev.map(d =>
+        d.id === id ? { ...d, ...updatedDataset, updatedAt: new Date() } : d,
       ))
       return updatedDataset
-    } catch (err) {
+    }
+ catch (err) {
       handleError(err)
       // Update locally for development
       const dataset = datasets.find(d => d.id === id)
@@ -349,15 +354,15 @@ export function useData(options: UseDataOptions = {}): UseDataReturn {
 
     try {
       const response = await fetch(`${apiUrl}/datasets/${id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
       })
 
-      if (!response.ok) {
+      if (!response.ok)
         throw new Error(`Delete dataset failed: ${response.status}`)
-      }
 
       setDatasets(prev => prev.filter(d => d.id !== id))
-    } catch (err) {
+    }
+ catch (err) {
       handleError(err)
       // Delete locally for development
       setDatasets(prev => prev.filter(d => d.id !== id))
@@ -367,7 +372,7 @@ export function useData(options: UseDataOptions = {}): UseDataReturn {
   const createKnowledgeBase = useCallback(async (
     name: string,
     description: string,
-    datasetIds: string[]
+    datasetIds: string[],
   ): Promise<KnowledgeBase> => {
     setIsLoading(true)
     setError(null)
@@ -376,17 +381,17 @@ export function useData(options: UseDataOptions = {}): UseDataReturn {
       const response = await fetch(`${apiUrl}/knowledge-bases`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, description, datasetIds })
+        body: JSON.stringify({ name, description, datasetIds }),
       })
 
-      if (!response.ok) {
+      if (!response.ok)
         throw new Error(`Create knowledge base failed: ${response.status}`)
-      }
 
       const newKB = await response.json()
       setKnowledgeBases(prev => [...prev, newKB])
       return newKB
-    } catch (err) {
+    }
+ catch (err) {
       handleError(err)
       // Create mock knowledge base for development
       const mockKB: KnowledgeBase = {
@@ -397,28 +402,29 @@ export function useData(options: UseDataOptions = {}): UseDataReturn {
         vectorCount: 0,
         status: 'indexing',
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       }
       setKnowledgeBases(prev => [...prev, mockKB])
-      
+
       // Simulate indexing completion
       setTimeout(() => {
-        setKnowledgeBases(prev => prev.map(kb => 
-          kb.id === mockKB.id 
+        setKnowledgeBases(prev => prev.map(kb =>
+          kb.id === mockKB.id
             ? { ...kb, status: 'ready', vectorCount: Math.floor(Math.random() * 2000) }
-            : kb
+            : kb,
         ))
       }, 3000)
-      
+
       return mockKB
-    } finally {
+    }
+ finally {
       setIsLoading(false)
     }
   }, [apiUrl, handleError])
 
   const updateKnowledgeBase = useCallback(async (
     id: string,
-    updates: Partial<KnowledgeBase>
+    updates: Partial<KnowledgeBase>,
   ): Promise<KnowledgeBase> => {
     setError(null)
 
@@ -426,19 +432,19 @@ export function useData(options: UseDataOptions = {}): UseDataReturn {
       const response = await fetch(`${apiUrl}/knowledge-bases/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updates)
+        body: JSON.stringify(updates),
       })
 
-      if (!response.ok) {
+      if (!response.ok)
         throw new Error(`Update knowledge base failed: ${response.status}`)
-      }
 
       const updatedKB = await response.json()
-      setKnowledgeBases(prev => prev.map(kb => 
-        kb.id === id ? { ...kb, ...updatedKB, updatedAt: new Date() } : kb
+      setKnowledgeBases(prev => prev.map(kb =>
+        kb.id === id ? { ...kb, ...updatedKB, updatedAt: new Date() } : kb,
       ))
       return updatedKB
-    } catch (err) {
+    }
+ catch (err) {
       handleError(err)
       // Update locally for development
       const kb = knowledgeBases.find(k => k.id === id)
@@ -456,15 +462,15 @@ export function useData(options: UseDataOptions = {}): UseDataReturn {
 
     try {
       const response = await fetch(`${apiUrl}/knowledge-bases/${id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
       })
 
-      if (!response.ok) {
+      if (!response.ok)
         throw new Error(`Delete knowledge base failed: ${response.status}`)
-      }
 
       setKnowledgeBases(prev => prev.filter(kb => kb.id !== id))
-    } catch (err) {
+    }
+ catch (err) {
       handleError(err)
       // Delete locally for development
       setKnowledgeBases(prev => prev.filter(kb => kb.id !== id))
@@ -473,24 +479,23 @@ export function useData(options: UseDataOptions = {}): UseDataReturn {
 
   const searchKnowledge = useCallback(async (
     query: string,
-    knowledgeBaseId?: string
+    knowledgeBaseId?: string,
   ): Promise<any[]> => {
     setError(null)
 
     try {
       const params = new URLSearchParams({ query })
-      if (knowledgeBaseId) {
+      if (knowledgeBaseId)
         params.append('knowledgeBaseId', knowledgeBaseId)
-      }
 
       const response = await fetch(`${apiUrl}/search?${params}`)
-      if (!response.ok) {
+      if (!response.ok)
         throw new Error(`Search failed: ${response.status}`)
-      }
 
       const results = await response.json()
       return results.results || []
-    } catch (err) {
+    }
+ catch (err) {
       handleError(err)
       // Return mock results for development
       return [
@@ -498,8 +503,8 @@ export function useData(options: UseDataOptions = {}): UseDataReturn {
           id: '1',
           content: `Mock search result for "${query}"`,
           score: 0.95,
-          metadata: { source: 'sample-data.csv' }
-        }
+          metadata: { source: 'sample-data.csv' },
+        },
       ]
     }
   }, [apiUrl, handleError])
@@ -519,7 +524,6 @@ export function useData(options: UseDataOptions = {}): UseDataReturn {
     updateKnowledgeBase,
     deleteKnowledgeBase,
     searchKnowledge,
-    refreshData
+    refreshData,
   }
 }
-

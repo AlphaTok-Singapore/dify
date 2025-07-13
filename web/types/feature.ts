@@ -70,8 +70,8 @@ export const defaultSystemFeatures: SystemFeatures = {
   sso_enforced_for_web: false,
   sso_enforced_for_web_protocol: '',
   enable_marketplace: false,
-  enable_email_code_login: true,  // Temporary fix: default to true
-  enable_email_password_login: true,  // Temporary fix: default to true
+  enable_email_code_login: true, // Temporary fix: default to true
+  enable_email_password_login: true, // Temporary fix: default to true
   enable_social_oauth_login: false,
   is_allow_create_workspace: false,
   is_allow_register: false,
@@ -88,13 +88,13 @@ export const defaultSystemFeatures: SystemFeatures = {
     application_title: 'test title',
   },
   webapp_auth: {
-    enabled: true,  // Temporary fix: default to true
+    enabled: true, // Temporary fix: default to true
     allow_sso: false,
     sso_config: {
       protocol: '',
     },
-    allow_email_code_login: true,  // Temporary fix: default to true
-    allow_email_password_login: true,  // Temporary fix: default to true
+    allow_email_code_login: true, // Temporary fix: default to true
+    allow_email_password_login: true, // Temporary fix: default to true
   },
 }
 

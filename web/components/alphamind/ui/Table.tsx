@@ -3,37 +3,37 @@
 import React from 'react'
 import { cn } from '@/lib/utils'
 
-interface TableProps extends React.HTMLAttributes<HTMLTableElement> {
+type TableProps = {
   children: React.ReactNode
-}
+} & React.HTMLAttributes<HTMLTableElement>
 
-interface TableHeaderProps extends React.HTMLAttributes<HTMLTableSectionElement> {
+type TableHeaderProps = {
   children: React.ReactNode
-}
+} & React.HTMLAttributes<HTMLTableSectionElement>
 
-interface TableBodyProps extends React.HTMLAttributes<HTMLTableSectionElement> {
+type TableBodyProps = {
   children: React.ReactNode
-}
+} & React.HTMLAttributes<HTMLTableSectionElement>
 
-interface TableFooterProps extends React.HTMLAttributes<HTMLTableSectionElement> {
+type TableFooterProps = {
   children: React.ReactNode
-}
+} & React.HTMLAttributes<HTMLTableSectionElement>
 
-interface TableRowProps extends React.HTMLAttributes<HTMLTableRowElement> {
+type TableRowProps = {
   children: React.ReactNode
-}
+} & React.HTMLAttributes<HTMLTableRowElement>
 
-interface TableHeadProps extends React.ThHTMLAttributes<HTMLTableCellElement> {
+type TableHeadProps = {
   children: React.ReactNode
-}
+} & React.ThHTMLAttributes<HTMLTableCellElement>
 
-interface TableCellProps extends React.TdHTMLAttributes<HTMLTableCellElement> {
+type TableCellProps = {
   children: React.ReactNode
-}
+} & React.TdHTMLAttributes<HTMLTableCellElement>
 
-interface TableCaptionProps extends React.HTMLAttributes<HTMLTableCaptionElement> {
+type TableCaptionProps = {
   children: React.ReactNode
-}
+} & React.HTMLAttributes<HTMLTableCaptionElement>
 
 const Table = React.forwardRef<HTMLTableElement, TableProps>(
   ({ className, ...props }, ref) => (
@@ -44,14 +44,14 @@ const Table = React.forwardRef<HTMLTableElement, TableProps>(
         {...props}
       />
     </div>
-  )
+  ),
 )
 Table.displayName = 'Table'
 
 const TableHeader = React.forwardRef<HTMLTableSectionElement, TableHeaderProps>(
   ({ className, ...props }, ref) => (
     <thead ref={ref} className={cn('[&_tr]:border-b', className)} {...props} />
-  )
+  ),
 )
 TableHeader.displayName = 'TableHeader'
 
@@ -62,7 +62,7 @@ const TableBody = React.forwardRef<HTMLTableSectionElement, TableBodyProps>(
       className={cn('[&_tr:last-child]:border-0', className)}
       {...props}
     />
-  )
+  ),
 )
 TableBody.displayName = 'TableBody'
 
@@ -70,10 +70,10 @@ const TableFooter = React.forwardRef<HTMLTableSectionElement, TableFooterProps>(
   ({ className, ...props }, ref) => (
     <tfoot
       ref={ref}
-      className={cn('border-t bg-muted/50 font-medium [&>tr]:last:border-b-0', className)}
+      className={cn('bg-muted/50 border-t font-medium [&>tr]:last:border-b-0', className)}
       {...props}
     />
-  )
+  ),
 )
 TableFooter.displayName = 'TableFooter'
 
@@ -82,12 +82,12 @@ const TableRow = React.forwardRef<HTMLTableRowElement, TableRowProps>(
     <tr
       ref={ref}
       className={cn(
-        'border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted',
-        className
+        'hover:bg-muted/50 data-[state=selected]:bg-muted border-b transition-colors',
+        className,
       )}
       {...props}
     />
-  )
+  ),
 )
 TableRow.displayName = 'TableRow'
 
@@ -96,12 +96,12 @@ const TableHead = React.forwardRef<HTMLTableCellElement, TableHeadProps>(
     <th
       ref={ref}
       className={cn(
-        'h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0',
-        className
+        'text-muted-foreground h-12 px-4 text-left align-middle font-medium [&:has([role=checkbox])]:pr-0',
+        className,
       )}
       {...props}
     />
-  )
+  ),
 )
 TableHead.displayName = 'TableHead'
 
@@ -112,7 +112,7 @@ const TableCell = React.forwardRef<HTMLTableCellElement, TableCellProps>(
       className={cn('p-4 align-middle [&:has([role=checkbox])]:pr-0', className)}
       {...props}
     />
-  )
+  ),
 )
 TableCell.displayName = 'TableCell'
 
@@ -120,10 +120,10 @@ const TableCaption = React.forwardRef<HTMLTableCaptionElement, TableCaptionProps
   ({ className, ...props }, ref) => (
     <caption
       ref={ref}
-      className={cn('mt-4 text-sm text-muted-foreground', className)}
+      className={cn('text-muted-foreground mt-4 text-sm', className)}
       {...props}
     />
-  )
+  ),
 )
 TableCaption.displayName = 'TableCaption'
 
@@ -143,6 +143,5 @@ export {
   type TableRowProps,
   type TableHeadProps,
   type TableCellProps,
-  type TableCaptionProps
+  type TableCaptionProps,
 }
-

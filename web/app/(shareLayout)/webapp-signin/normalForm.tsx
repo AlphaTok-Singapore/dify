@@ -124,7 +124,7 @@ const NormalForm = () => {
               {systemFeatures.enable_email_code_login && authType === 'code' && (
                 <React.Fragment>
                   <MailAndCodeAuth />
-                  {systemFeatures.enable_email_password_login && <button type="button" className='w-full cursor-pointer py-1 text-center bg-transparent border-none' onClick={() => { setAuthType('password') }}>
+                  {systemFeatures.enable_email_password_login && <button type="button" className='w-full cursor-pointer border-none bg-transparent py-1 text-center' onClick={() => { setAuthType('password') }}>
                     <span className='system-xs-medium text-components-button-secondary-accent-text'>{t('login.usePassword')}</span>
                   </button>}
                 </React.Fragment>
@@ -132,7 +132,7 @@ const NormalForm = () => {
               {systemFeatures.enable_email_password_login && authType === 'password' && (
                 <React.Fragment>
                   <MailAndPasswordAuth isEmailSetup={systemFeatures.is_email_setup} />
-                  {systemFeatures.enable_email_code_login && <button type="button" className='w-full cursor-pointer py-1 text-center bg-transparent border-none' onClick={() => { setAuthType('code') }}>
+                  {systemFeatures.enable_email_code_login && <button type="button" className='w-full cursor-pointer border-none bg-transparent py-1 text-center' onClick={() => { setAuthType('code') }}>
                     <span className='system-xs-medium text-components-button-secondary-accent-text'>{t('login.useVerificationCode')}</span>
                   </button>}
                 </React.Fragment>
@@ -173,7 +173,7 @@ const NormalForm = () => {
                 href='https://dify.ai/privacy'
               >{t('login.pp')}</Link>
             </div>
-            {IS_CE_EDITION && <div className="w-full system-xs-regular mt-2 block text-text-tertiary">
+            {IS_CE_EDITION && <div className="system-xs-regular mt-2 block w-full text-text-tertiary">
               {t('login.goToInit')}
               &nbsp;
               <Link

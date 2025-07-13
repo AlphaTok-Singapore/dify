@@ -1,12 +1,12 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Bot, Save, Play, Settings } from 'lucide-react'
+import { Bot, Play, Save } from 'lucide-react'
 import { Button } from '../ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card'
-import { Form, FormField, FormLabel, FormInput, FormTextarea, FormSelect } from '../ui/Form'
+import { Form, FormField, FormInput, FormLabel, FormSelect, FormTextarea } from '../ui/Form'
 
-interface AgentConfig {
+type AgentConfig = {
   name: string
   description: string
   personality: string
@@ -16,7 +16,7 @@ interface AgentConfig {
   maxTokens: number
 }
 
-interface AgentBuilderProps {
+type AgentBuilderProps = {
   initialConfig?: Partial<AgentConfig>
   onSave?: (config: AgentConfig) => void
   onTest?: (config: AgentConfig) => void
@@ -27,7 +27,7 @@ const AgentBuilder: React.FC<AgentBuilderProps> = ({
   initialConfig,
   onSave,
   onTest,
-  className
+  className,
 }) => {
   const [config, setConfig] = useState<AgentConfig>({
     name: initialConfig?.name || '',
@@ -36,7 +36,7 @@ const AgentBuilder: React.FC<AgentBuilderProps> = ({
     skills: initialConfig?.skills || [],
     model: initialConfig?.model || 'gpt-3.5-turbo',
     temperature: initialConfig?.temperature || 0.7,
-    maxTokens: initialConfig?.maxTokens || 2000
+    maxTokens: initialConfig?.maxTokens || 2000,
   })
 
   const [newSkill, setNewSkill] = useState('')
@@ -49,7 +49,7 @@ const AgentBuilder: React.FC<AgentBuilderProps> = ({
     if (newSkill.trim() && !config.skills.includes(newSkill.trim())) {
       setConfig(prev => ({
         ...prev,
-        skills: [...prev.skills, newSkill.trim()]
+        skills: [...prev.skills, newSkill.trim()],
       }))
       setNewSkill('')
     }
@@ -58,7 +58,7 @@ const AgentBuilder: React.FC<AgentBuilderProps> = ({
   const removeSkill = (skill: string) => {
     setConfig(prev => ({
       ...prev,
-      skills: prev.skills.filter(s => s !== skill)
+      skills: prev.skills.filter(s => s !== skill),
     }))
   }
 
@@ -81,12 +81,12 @@ const AgentBuilder: React.FC<AgentBuilderProps> = ({
       <CardContent>
         <Form className="space-y-6">
           {/* Basic Information */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <FormField>
               <FormLabel required>Agent Name</FormLabel>
               <FormInput
                 value={config.name}
-                onChange={(e) => handleInputChange('name', e.target.value)}
+                onChange={e => handleInputChange('name', e.target.value)}
                 placeholder="Enter agent name"
               />
             </FormField>
@@ -95,7 +95,7 @@ const AgentBuilder: React.FC<AgentBuilderProps> = ({
               <FormLabel>Model</FormLabel>
               <FormSelect
                 value={config.model}
-                onChange={(e) => handleInputChange('model', e.target.value)}
+                onChange={e => handleInputChange('model', e.target.value)}
               >
                 <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
                 <option value="gpt-4">GPT-4</option>
@@ -109,7 +109,7 @@ const AgentBuilder: React.FC<AgentBuilderProps> = ({
             <FormLabel>Description</FormLabel>
             <FormTextarea
               value={config.description}
-              onChange={(e) => handleInputChange('description', e.target.value)}
+              onChange={e => handleInputChange('description', e.target.value)}
               placeholder="Describe what this agent does"
               rows={3}
             />
@@ -119,7 +119,7 @@ const AgentBuilder: React.FC<AgentBuilderProps> = ({
             <FormLabel>Personality</FormLabel>
             <FormTextarea
               value={config.personality}
-              onChange={(e) => handleInputChange('personality', e.target.value)}
+              onChange={e => handleInputChange('personality', e.target.value)}
               placeholder="Define the agent's personality and communication style"
               rows={4}
             />
@@ -132,9 +132,14 @@ const AgentBuilder: React.FC<AgentBuilderProps> = ({
               <div className="flex gap-2">
                 <FormInput
                   value={newSkill}
-                  onChange={(e) => setNewSkill(e.target.value)}
+                  onChange={e => setNewSkill(e.target.value)}
                   placeholder="Add a skill"
-                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addSkill())}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      addSkill()
+                    }
+                  }}
                 />
                 <Button type="button" onClick={addSkill}>
                   Add
@@ -144,7 +149,7 @@ const AgentBuilder: React.FC<AgentBuilderProps> = ({
                 {config.skills.map((skill, index) => (
                   <span
                     key={index}
-                    className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 rounded-md text-sm"
+                    className="inline-flex items-center gap-1 rounded-md bg-blue-100 px-2 py-1 text-sm text-blue-800"
                   >
                     {skill}
                     <button
@@ -161,7 +166,7 @@ const AgentBuilder: React.FC<AgentBuilderProps> = ({
           </FormField>
 
           {/* Advanced Settings */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <FormField>
               <FormLabel>Temperature</FormLabel>
               <FormInput
@@ -170,7 +175,7 @@ const AgentBuilder: React.FC<AgentBuilderProps> = ({
                 max="2"
                 step="0.1"
                 value={config.temperature}
-                onChange={(e) => handleInputChange('temperature', parseFloat(e.target.value))}
+                onChange={e => handleInputChange('temperature', Number.parseFloat(e.target.value))}
               />
             </FormField>
 
@@ -181,7 +186,7 @@ const AgentBuilder: React.FC<AgentBuilderProps> = ({
                 min="1"
                 max="4000"
                 value={config.maxTokens}
-                onChange={(e) => handleInputChange('maxTokens', parseInt(e.target.value))}
+                onChange={e => handleInputChange('maxTokens', Number.parseInt(e.target.value))}
               />
             </FormField>
           </div>
@@ -192,8 +197,8 @@ const AgentBuilder: React.FC<AgentBuilderProps> = ({
               <Save className="h-4 w-4" />
               Save Agent
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={handleTest}
               className="flex items-center gap-2"
             >
@@ -208,4 +213,3 @@ const AgentBuilder: React.FC<AgentBuilderProps> = ({
 }
 
 export { AgentBuilder, type AgentBuilderProps, type AgentConfig }
-

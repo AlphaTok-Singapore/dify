@@ -1,6 +1,6 @@
 // AlphaMind TypeScript 类型定义
 
-export interface Agent {
+export type Agent = {
   id: number
   name: string
   description: string
@@ -14,7 +14,7 @@ export interface Agent {
   config?: AgentConfig
 }
 
-export interface AgentConfig {
+export type AgentConfig = {
   temperature: number
   maxTokens: number
   systemPrompt?: string
@@ -22,7 +22,7 @@ export interface AgentConfig {
   workflows?: string[]
 }
 
-export interface Message {
+export type Message = {
   id: string
   role: 'user' | 'assistant' | 'system'
   content: string
@@ -31,7 +31,7 @@ export interface Message {
   conversationId?: string
 }
 
-export interface Conversation {
+export type Conversation = {
   id: string
   title: string
   agentId: number
@@ -42,7 +42,7 @@ export interface Conversation {
   messages?: Message[]
 }
 
-export interface Dataset {
+export type Dataset = {
   id: number
   name: string
   description: string
@@ -54,7 +54,7 @@ export interface Dataset {
   lastModified: string
 }
 
-export interface UserSettings {
+export type UserSettings = {
   profile: {
     name: string
     email: string
@@ -83,14 +83,14 @@ export interface UserSettings {
   }
 }
 
-export interface ApiResponse<T = any> {
+export type ApiResponse<T = any> = {
   success: boolean
   data?: T
   error?: string
   message?: string
 }
 
-export interface PaginatedResponse<T = any> {
+export type PaginatedResponse<T = any> = {
   success: boolean
   data: T[]
   pagination: {
@@ -101,14 +101,14 @@ export interface PaginatedResponse<T = any> {
   }
 }
 
-export interface SystemStatus {
+export type SystemStatus = {
   status: 'healthy' | 'degraded' | 'down'
   services: Record<string, boolean>
   uptime: string
   version: string
 }
 
-export interface WorkflowExecution {
+export type WorkflowExecution = {
   id: string
   workflowId: string
   status: 'running' | 'success' | 'error' | 'cancelled'
@@ -119,7 +119,7 @@ export interface WorkflowExecution {
   errorMessage?: string
 }
 
-export interface MCPTool {
+export type MCPTool = {
   id: number
   name: string
   description: string
@@ -128,4 +128,3 @@ export interface MCPTool {
   status: 'installed' | 'available' | 'updating' | 'error'
   config: Record<string, any>
 }
-

@@ -1,19 +1,19 @@
 'use client'
 
-import React, { useState, useRef, useEffect } from 'react'
-import { Send, Bot, User, Loader2 } from 'lucide-react'
+import React, { useEffect, useRef, useState } from 'react'
+import { Bot, Loader2, Send, User } from 'lucide-react'
 import { Button } from '../ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card'
 import { FormInput } from '../ui/Form'
 
-interface Message {
+type Message = {
   id: string
   content: string
   sender: 'user' | 'bot'
   timestamp: Date
 }
 
-interface ChatBotProps {
+type ChatBotProps = {
   agentId?: string
   conversationId?: string
   onMessageSent?: (message: string) => void
@@ -24,15 +24,15 @@ const ChatBot: React.FC<ChatBotProps> = ({
   agentId,
   conversationId,
   onMessageSent,
-  className
+  className,
 }) => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
       content: 'Hello! I\'m your AI assistant. How can I help you today?',
       sender: 'bot',
-      timestamp: new Date()
-    }
+      timestamp: new Date(),
+    },
   ])
   const [inputValue, setInputValue] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -53,7 +53,7 @@ const ChatBot: React.FC<ChatBotProps> = ({
       id: Date.now().toString(),
       content: inputValue,
       sender: 'user',
-      timestamp: new Date()
+      timestamp: new Date(),
     }
 
     setMessages(prev => [...prev, userMessage])
@@ -69,7 +69,7 @@ const ChatBot: React.FC<ChatBotProps> = ({
         id: (Date.now() + 1).toString(),
         content: `I understand you said: "${userMessage.content}". How can I assist you further?`,
         sender: 'bot',
-        timestamp: new Date()
+        timestamp: new Date(),
       }
       setMessages(prev => [...prev, botMessage])
       setIsLoading(false)
@@ -93,8 +93,8 @@ const ChatBot: React.FC<ChatBotProps> = ({
       </CardHeader>
       <CardContent className="p-0">
         {/* Messages Area */}
-        <div className="h-96 overflow-y-auto p-4 space-y-4">
-          {messages.map((message) => (
+        <div className="h-96 space-y-4 overflow-y-auto p-4">
+          {messages.map(message => (
             <div
               key={message.id}
               className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
@@ -108,14 +108,14 @@ const ChatBot: React.FC<ChatBotProps> = ({
               >
                 <div className="flex items-start gap-2">
                   {message.sender === 'bot' && (
-                    <Bot className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                    <Bot className="mt-0.5 h-4 w-4 shrink-0" />
                   )}
                   {message.sender === 'user' && (
-                    <User className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                    <User className="mt-0.5 h-4 w-4 shrink-0" />
                   )}
                   <div className="flex-1">
                     <p className="text-sm">{message.content}</p>
-                    <p className={`text-xs mt-1 ${
+                    <p className={`mt-1 text-xs ${
                       message.sender === 'user' ? 'text-blue-100' : 'text-gray-500'
                     }`}>
                       {message.timestamp.toLocaleTimeString()}
@@ -125,10 +125,10 @@ const ChatBot: React.FC<ChatBotProps> = ({
               </div>
             </div>
           ))}
-          
+
           {isLoading && (
             <div className="flex justify-start">
-              <div className="bg-gray-100 rounded-lg p-3">
+              <div className="rounded-lg bg-gray-100 p-3">
                 <div className="flex items-center gap-2">
                   <Bot className="h-4 w-4" />
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -137,7 +137,7 @@ const ChatBot: React.FC<ChatBotProps> = ({
               </div>
             </div>
           )}
-          
+
           <div ref={messagesEndRef} />
         </div>
 
@@ -146,7 +146,7 @@ const ChatBot: React.FC<ChatBotProps> = ({
           <div className="flex gap-2">
             <FormInput
               value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
+              onChange={e => setInputValue(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Type your message..."
               disabled={isLoading}
@@ -171,4 +171,3 @@ const ChatBot: React.FC<ChatBotProps> = ({
 }
 
 export { ChatBot, type ChatBotProps, type Message }
-

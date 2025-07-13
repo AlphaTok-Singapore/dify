@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
-export interface Agent {
+export type Agent = {
   id: string
   name: string
   description: string
@@ -21,7 +21,7 @@ export interface Agent {
   }
 }
 
-export interface AgentTemplate {
+export type AgentTemplate = {
   id: string
   name: string
   description: string
@@ -29,12 +29,12 @@ export interface AgentTemplate {
   config: Partial<Agent>
 }
 
-export interface UseAgentOptions {
+export type UseAgentOptions = {
   apiUrl?: string
   onError?: (error: Error) => void
 }
 
-export interface UseAgentReturn {
+export type UseAgentReturn = {
   agents: Agent[]
   templates: AgentTemplate[]
   isLoading: boolean
@@ -59,12 +59,6 @@ export function useAgent(options: UseAgentOptions = {}): UseAgentReturn {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Load initial data
-  useEffect(() => {
-    refreshAgents()
-    loadTemplates()
-  }, [])
-
   const handleError = useCallback((err: unknown) => {
     const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred'
     setError(errorMessage)
@@ -74,18 +68,15 @@ export function useAgent(options: UseAgentOptions = {}): UseAgentReturn {
   const refreshAgents = useCallback(async () => {
     setIsLoading(true)
     setError(null)
-
     try {
       const response = await fetch(apiUrl)
-      if (!response.ok) {
+      if (!response.ok)
         throw new Error(`Failed to fetch agents: ${response.status}`)
-      }
-
       const data = await response.json()
       setAgents(data.agents || [])
-    } catch (err) {
+    }
+    catch (err) {
       handleError(err)
-      // Set mock data for development
       setAgents([
         {
           id: '1',
@@ -102,8 +93,8 @@ export function useAgent(options: UseAgentOptions = {}): UseAgentReturn {
           metrics: {
             totalConversations: 150,
             averageResponseTime: 1.2,
-            satisfactionScore: 4.5
-          }
+            satisfactionScore: 4.5,
+          },
         },
         {
           id: '2',
@@ -120,11 +111,12 @@ export function useAgent(options: UseAgentOptions = {}): UseAgentReturn {
           metrics: {
             totalConversations: 89,
             averageResponseTime: 1.5,
-            satisfactionScore: 4.2
-          }
-        }
+            satisfactionScore: 4.2,
+          },
+        },
       ])
-    } finally {
+    }
+    finally {
       setIsLoading(false)
     }
   }, [apiUrl, handleError])
@@ -132,14 +124,12 @@ export function useAgent(options: UseAgentOptions = {}): UseAgentReturn {
   const loadTemplates = useCallback(async () => {
     try {
       const response = await fetch(`${apiUrl}/templates`)
-      if (!response.ok) {
+      if (!response.ok)
         throw new Error(`Failed to fetch templates: ${response.status}`)
-      }
-
       const data = await response.json()
       setTemplates(data.templates || [])
-    } catch (err) {
-      // Set mock templates for development
+    }
+    catch (err) {
       setTemplates([
         {
           id: 'customer-support',
@@ -150,8 +140,8 @@ export function useAgent(options: UseAgentOptions = {}): UseAgentReturn {
             personality: 'Friendly, helpful, and professional',
             skills: ['customer service', 'problem solving'],
             model: 'gpt-3.5-turbo',
-            temperature: 0.7
-          }
+            temperature: 0.7,
+          },
         },
         {
           id: 'sales-assistant',
@@ -162,12 +152,18 @@ export function useAgent(options: UseAgentOptions = {}): UseAgentReturn {
             personality: 'Enthusiastic and knowledgeable',
             skills: ['sales', 'product knowledge'],
             model: 'gpt-4',
-            temperature: 0.8
-          }
-        }
+            temperature: 0.8,
+          },
+        },
       ])
     }
   }, [apiUrl])
+
+  // Load initial data
+  useEffect(() => {
+    refreshAgents()
+    loadTemplates()
+  }, [])
 
   const createAgent = useCallback(async (config: Partial<Agent>): Promise<Agent> => {
     setIsLoading(true)
@@ -177,17 +173,17 @@ export function useAgent(options: UseAgentOptions = {}): UseAgentReturn {
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(config)
+        body: JSON.stringify(config),
       })
 
-      if (!response.ok) {
+      if (!response.ok)
         throw new Error(`Failed to create agent: ${response.status}`)
-      }
 
       const newAgent = await response.json()
       setAgents(prev => [...prev, newAgent])
       return newAgent
-    } catch (err) {
+    }
+    catch (err) {
       handleError(err)
       // Return mock agent for development
       const mockAgent: Agent = {
@@ -201,11 +197,12 @@ export function useAgent(options: UseAgentOptions = {}): UseAgentReturn {
         maxTokens: config.maxTokens || 2000,
         status: 'inactive',
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       }
       setAgents(prev => [...prev, mockAgent])
       return mockAgent
-    } finally {
+    }
+    finally {
       setIsLoading(false)
     }
   }, [apiUrl, handleError])
@@ -218,19 +215,19 @@ export function useAgent(options: UseAgentOptions = {}): UseAgentReturn {
       const response = await fetch(`${apiUrl}/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updates)
+        body: JSON.stringify(updates),
       })
 
-      if (!response.ok) {
+      if (!response.ok)
         throw new Error(`Failed to update agent: ${response.status}`)
-      }
 
       const updatedAgent = await response.json()
-      setAgents(prev => prev.map(agent => 
-        agent.id === id ? { ...agent, ...updatedAgent, updatedAt: new Date() } : agent
+      setAgents(prev => prev.map(agent =>
+        agent.id === id ? { ...agent, ...updatedAgent, updatedAt: new Date() } : agent,
       ))
       return updatedAgent
-    } catch (err) {
+    }
+    catch (err) {
       handleError(err)
       // Update locally for development
       const updatedAgent = agents.find(a => a.id === id)
@@ -240,7 +237,8 @@ export function useAgent(options: UseAgentOptions = {}): UseAgentReturn {
         return newAgent
       }
       throw new Error('Agent not found')
-    } finally {
+    }
+    finally {
       setIsLoading(false)
     }
   }, [apiUrl, handleError, agents])
@@ -251,19 +249,20 @@ export function useAgent(options: UseAgentOptions = {}): UseAgentReturn {
 
     try {
       const response = await fetch(`${apiUrl}/${id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
       })
 
-      if (!response.ok) {
+      if (!response.ok)
         throw new Error(`Failed to delete agent: ${response.status}`)
-      }
 
       setAgents(prev => prev.filter(agent => agent.id !== id))
-    } catch (err) {
+    }
+    catch (err) {
       handleError(err)
       // Delete locally for development
       setAgents(prev => prev.filter(agent => agent.id !== id))
-    } finally {
+    }
+    finally {
       setIsLoading(false)
     }
   }, [apiUrl, handleError])
@@ -283,16 +282,16 @@ export function useAgent(options: UseAgentOptions = {}): UseAgentReturn {
       const response = await fetch(`${apiUrl}/${id}/test`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message })
+        body: JSON.stringify({ message }),
       })
 
-      if (!response.ok) {
+      if (!response.ok)
         throw new Error(`Failed to test agent: ${response.status}`)
-      }
 
       const data = await response.json()
       return data.response
-    } catch (err) {
+    }
+    catch (err) {
       handleError(err)
       // Return mock response for development
       return `Test response from agent ${id}: I received your message "${message}"`
@@ -302,36 +301,35 @@ export function useAgent(options: UseAgentOptions = {}): UseAgentReturn {
   const getAgentMetrics = useCallback(async (id: string): Promise<Agent['metrics']> => {
     try {
       const response = await fetch(`${apiUrl}/${id}/metrics`)
-      if (!response.ok) {
+      if (!response.ok)
         throw new Error(`Failed to fetch metrics: ${response.status}`)
-      }
 
       const data = await response.json()
       return data.metrics
-    } catch (err) {
+    }
+    catch (err) {
       handleError(err)
       // Return mock metrics for development
       return {
         totalConversations: Math.floor(Math.random() * 200),
         averageResponseTime: Math.random() * 3,
-        satisfactionScore: 3 + Math.random() * 2
+        satisfactionScore: 3 + Math.random() * 2,
       }
     }
   }, [apiUrl, handleError])
 
   const createFromTemplate = useCallback(async (
-    templateId: string, 
-    customizations: Partial<Agent> = {}
+    templateId: string,
+    customizations: Partial<Agent> = {},
   ): Promise<Agent> => {
     const template = templates.find(t => t.id === templateId)
-    if (!template) {
+    if (!template)
       throw new Error('Template not found')
-    }
 
     const agentConfig = {
       ...template.config,
       ...customizations,
-      name: customizations.name || template.name
+      name: customizations.name || template.name,
     }
 
     return createAgent(agentConfig)
@@ -351,7 +349,6 @@ export function useAgent(options: UseAgentOptions = {}): UseAgentReturn {
     getAgentMetrics,
     loadTemplates,
     createFromTemplate,
-    refreshAgents
+    refreshAgents,
   }
 }
-
