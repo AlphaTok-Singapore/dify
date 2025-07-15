@@ -326,7 +326,7 @@ export default function WorkflowsPage() {
           id="right-panel"
         >
           <h2 className="mb-3 text-xl font-bold text-[#1a1a1a]">Output & Edit Area</h2>
-          <label className="output-label mb-2 font-semibold text-[#222]" htmlFor="finalPost">Working Post (AI output will auto-sync here. You can edit!)</label>
+          <label className="output-label mb-2 font-semibold text-[#222]" htmlFor="finalPost">Working Post</label>
           <div style={{ flex: 1, minHeight: 200, display: 'flex', flexDirection: 'column' }}>
             <textarea
               id="finalPost"
